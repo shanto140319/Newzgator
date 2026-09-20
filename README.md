@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Newzgator
 
-## Getting Started
+Bengali news reader built with Next.js App Router.
 
-First, run the development server:
+## Run
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Copy .env.example to .env.local and configure ARTICLE_API_BASE_URL and SITE_URL.
+Run npm install, then npm run dev. Production: npm run build followed by npm start.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Data and navigation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The API origin is https://newzgator-api.onrender.com. Lists use /api/v1/articles?limit=20 and details use /api/v1/articles/{id}. ARTICLE_API_BASE_URL overrides the API origin; SITE_URL is the separate frontend origin used for SEO metadata.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+- Categories come from /api/v1/categories; the selected category is encoded in the home URL.
+- Article details use /article/[id]; old /article?id= links redirect permanently.
+- Initial articles and details render on the server. Pagination uses the same-origin /api/articles endpoint and the upstream cursor with limit=20.
+- Scrolling within 300 pixels of the feed bottom loads another page. Pagination has no Load More button; a scroll/resize fallback supports browsers without IntersectionObserver. A retry button appears only after a failed request.
+- Loaded articles, cursor, and scroll are saved per history entry and category URL. Browser Back and the detail page's home link restore the list before scrolling. Memory backs up optional session storage; caches keep at most 20 snapshots. Reload recovery requires session storage.
+- API timestamps without an offset are treated as Bangladesh local time.
 
-To learn more about Next.js, take a look at the following resources:
+## Images
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Approved publisher image hosts are configured in app/lib/urls.ts and next.config.ts. Keep these lists in sync when adding publishers.
+Kalbela currently returns HTTP 403 HTML to server image requests, and remote SVG logos are served directly. If a publisher refuses an image request, the UI shows a stable placeholder. Other approved raster images retain Next.js optimization. Missing API image URLs also use placeholders.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Checks
 
-## Deploy on Vercel
+- npm run lint
+- npm run build
+- npm run test:e2e
+- npm run test:dev (requires the configured article API; reuses or starts the development server on port 3000)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The development regression loads three real batches and tests both Back and the home link with further pagination requests blocked, verifying that the article list and opaque cursor survive Strict Mode replay.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Production browser tests use installed Microsoft Edge and local fixture servers on ports 3100 and 4100. Run the build first. They cover scroll pagination, Back/Forward, reload, return-home links, blocked storage, category isolation, retries, metadata, invalid inputs, image failure, skeletons, mobile layout, and accessibility scans in all themes.

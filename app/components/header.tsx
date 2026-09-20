@@ -1,60 +1,19 @@
-const categories = [
-  "সর্বশেষ",
-  "বাংলাদেশ",
-  "বিশ্ব",
-  "রাজনীতি",
-  "অর্থনীতি",
-  "খেলা",
-  "প্রযুক্তি",
-  "বিনোদন",
-];
+import Link from "next/link";
+import { ThemeSwitcher } from "./theme-switcher";
+import type { Category } from "../lib/articles";
+import { feedHref } from "../lib/feed-route";
 
-export function Header() {
-  const today = new Intl.DateTimeFormat("bn-BD", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "Asia/Dhaka",
-  }).format(new Date());
-
-  return (
-    <header className="site-header">
-      <div className="topline">
-        <div className="container topline-inner">
-          <span>বাংলাদেশ ও বিশ্বের নির্ভরযোগ্য সংবাদ</span>
-          <time>{today}</time>
-        </div>
+export function Header({ categories = [], activeCategory, portalId = "", loading = false }: { categories?: Category[]; activeCategory?: string; portalId?: string; loading?: boolean }) {
+  return <header className="site-header">
+    <div className="site-container flex min-h-22 items-center justify-between gap-4 max-sm:min-h-19">
+      <Link className="brand" href="/" aria-label="নিউজগেটর হোম"><span className="brand-mark" aria-hidden="true">ন</span><span>নিউজ<span className="text-[#d73822] dark:text-[#ff8069]">গেটর</span></span></Link>
+      <p className="muted hidden text-sm md:block">দেশ ও বিশ্বের খবর, এক জায়গায়</p>
+      <ThemeSwitcher />
+    </div>
+    <nav aria-label="সংবাদ বিভাগ" className="category-nav">
+      <div className="site-container flex min-h-13 items-stretch gap-8 overflow-x-auto [scrollbar-width:none] max-sm:gap-6">
+        {loading ? <span aria-hidden="true" className="flex items-center gap-8 animate-pulse">{Array.from({ length: 8 }, (_, i) => <span key={i} className="h-4 w-16 rounded bg-slate-200 dark:bg-white/10" />)}</span> : [{ name: "", nameBn: "সর্বশেষ", nameEn: "Latest" }, ...categories].map(category => <Link key={category.name} prefetch={false} href={feedHref(category.name, portalId)} aria-current={category.name === activeCategory ? "page" : undefined} className="category-link">{category.nameBn || category.nameEn || category.name}</Link>)}
       </div>
-
-      <div className="container masthead">
-        <a className="brand" href="#top" aria-label="নিউজগেটর হোম">
-          <span className="brand-mark" aria-hidden="true">
-            ন
-          </span>
-          <span>
-            নিউজ<span>গেটর</span>
-          </span>
-        </a>
-        <div className="masthead-note">
-          <span className="masthead-rule" />
-          সংবাদ, সংক্ষেপে
-        </div>
-      </div>
-
-      <nav className="category-nav" aria-label="সংবাদ বিভাগ">
-        <div className="container nav-scroll">
-          {categories.map((category, index) => (
-            <a
-              key={category}
-              className={index === 0 ? "active" : undefined}
-              href="#latest-heading"
-            >
-              {category}
-            </a>
-          ))}
-        </div>
-      </nav>
-    </header>
-  );
+    </nav>
+  </header>;
 }
