@@ -1,4 +1,5 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { cache } from "react";
 import type { Article, ArticleDetails, ArticleListResponse, Category, RelatedArticle, Portal, TrendingCluster } from "./articles";
 import { safeUrl, imageUrl } from "./urls";
@@ -9,9 +10,10 @@ export class ApiError extends Error {
   constructor(public status: number) { super("Article service unavailable"); }
 }
 async function request(path: string, timeoutMs = requestTimeoutMs) {
+  const id = (await cookies()).get("news-reader")?.value;
   const response = await fetch(base + path, {
     cache: "no-store", redirect: "error",
-    headers: { Accept: "application/json" },
+    headers: { Accept: "application/json", ...(id ? { "X-User-Id": id } : {}) },
     signal: AbortSignal.timeout(timeoutMs),
   });
   if (!response.ok) throw new ApiError(response.status);
@@ -75,4 +77,20 @@ export async function getTrending(): Promise<TrendingCluster[]> {
     seen.add(item.clusterId);
     return true;
   }).slice(0, 3).map(item => ({ clusterId: item.clusterId, topicTitle: item.topicTitle, totalArticles: item.totalArticles, leadArticle: { id: item.leadArticle.id, mainImage: imageUrl(item.leadArticle.mainImage) ?? null } }));
+}
+
+export async function utilityRequest(path: string, method: string, body?: unknown) {
+  const id = (await cookies()).get("news-reader")?.value;
+  if (!id) throw new ApiError(401);
+  const response = await fetch(base + path, { method, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(15_000), headers: { Accept: "application/json", "Content-Type": "application/json", "X-User-Id": id }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+  if (!response.ok) throw new ApiError(response.status);
+  if (response.status === 204) return null;
+  const result = await response.json();
+  if (result.success === false) throw new ApiError(502);
+  return result;
+}
+export async function getBookmarks(cursor = ""): Promise<ArticleListResponse["data"]> {
+  const data = await request("/api/v1/bookmarks?" + new URLSearchParams({ limit: "20", ...(cursor ? { cursor } : {}) }));
+  if (!Array.isArray(data.items) || typeof data.hasNext !== "boolean" || (data.nextCursor !== null && typeof data.nextCursor !== "string")) throw new ApiError(502);
+  return { items: data.items.map((entry: { article: Article }) => normalize({ ...entry.article, summary: entry.article.summary ?? "", isBookmarked: true })), nextCursor: data.nextCursor, hasNext: data.hasNext && !!data.nextCursor, size: data.items.length };
 }

@@ -1,6 +1,7 @@
 import { NewsImage } from "./news-image";
 import Link from "next/link";
 import type { ArticleDetails } from "../lib/articles";
+import { SaveButton } from "./save-button";
 import { ReactionBar } from "./reaction-bar";
 
 export function ArticleDetailsView({ article, categoryLabel }: { article: ArticleDetails; categoryLabel: string }) {
@@ -20,7 +21,7 @@ export function ArticleDetailsView({ article, categoryLabel }: { article: Articl
     <div className="detail-body whitespace-pre-line">{article.details.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
     <footer className="mt-8 flex flex-wrap items-center gap-5 border-t border-[var(--line)] pt-6">
       {article.url && <a className="source-button" href={article.url} target="_blank" rel="noreferrer">মূল সংবাদ পড়ুন <span aria-hidden="true">↗</span></a>}
-      <ReactionBar reactions={article.articleReactions} />
+      <ReactionBar articleId={article.id} reactions={article.articleReactions} /><SaveButton articleId={article.id} initialSaved={article.isBookmarked} />
     </footer>
   </article>;
 }

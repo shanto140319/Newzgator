@@ -283,3 +283,32 @@ test("homepage discovery matches the desktop and mobile layout", async ({ page }
   await sidebar.locator('a[href="/article/101"]').click();
   await expect(page.locator("h1")).toContainText("101");
 });
+
+
+test("persistent sidebar stays reachable and summaries remain complete", async ({ page }) => {
+  await page.goto("/");
+  const sidebar = page.getByRole("complementary", { name: "সংবাদ আবিষ্কার" });
+  await expect(sidebar.getByRole("heading", { name: "আলোচনায়" })).toBeVisible();
+  await page.evaluate(() => scrollTo(0, 2200));
+  const first = await sidebar.boundingBox();
+  await page.evaluate(() => scrollBy(0, 700));
+  const second = await sidebar.boundingBox();
+  expect(Math.abs(first!.y - second!.y)).toBeLessThan(2);
+  await expect(sidebar.getByRole("link", { name: "উপরে যান ↑" })).toBeInViewport();
+  await page.setViewportSize({ width: 1280, height: 500 });
+  await page.evaluate(() => scrollBy(0, 700));
+  const short = await sidebar.boundingBox();
+  expect(short!.y + short!.height).toBeLessThanOrEqual(500);
+  await expect(sidebar.getByRole("link", { name: "উপরে যান ↑" })).toBeInViewport();
+  await sidebar.getByRole("link", { name: "উপরে যান ↑" }).click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    const summary = page.locator(".story-summary").nth(1);
+    expect(await summary.evaluate(el => el.scrollHeight <= el.clientHeight + 1)).toBeTruthy();
+    expect(await summary.evaluate(el => getComputedStyle(el).webkitLineClamp)).toBe("none");
+    await expect(page.locator("main article").first().getByRole("button", { name: /পরে পড়ুন/ })).toBeEnabled();
+    await expect(page.locator("main article").first().getByRole("group", { name: "পাঠকের প্রতিক্রিয়া" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+  }
+});

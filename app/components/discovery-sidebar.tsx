@@ -1,3 +1,4 @@
+import { StickySidebar } from "./sticky-sidebar";
 import { Suspense } from "react";
 import Link from "next/link";
 import { getTrending } from "../lib/api";
@@ -20,12 +21,16 @@ async function TrendingStories() {
     </Link>
   </li>)}</ol>;
 }
+function PublisherLinks({ portals, category, portalId }: { portals: Portal[]; category: string; portalId: string }) {
+  return <ul className="publisher-list">{portals.map(portal => <li key={portal.id}><Link prefetch={false} href={feedHref(category, String(portal.id))} aria-current={portalId === String(portal.id) ? "page" : undefined} className="publisher-link"><span className="relative grid h-9 w-12 shrink-0 place-items-center overflow-hidden rounded bg-white text-sm font-bold text-slate-700">{portal.logo ? <NewsImage src={portal.logo} alt="" fill sizes="48px" className="object-contain p-1" /> : (portal.nameBn || portal.name).slice(0, 1)}</span><span className="min-w-0 flex-1">{portal.nameBn || portal.name}</span><span aria-hidden="true">›</span></Link></li>)}</ul>;
+}
 export function DiscoverySidebar({ portals, category, portalId }: { portals: Portal[]; category: string; portalId: string }) {
-  return <aside aria-label="সংবাদ আবিষ্কার" className="discovery-sidebar">
+  return <StickySidebar>
     <section className="discovery-panel" aria-labelledby="trending-heading"><h2 id="trending-heading" className="text-xl font-extrabold">আলোচনায়</h2><Suspense fallback={<DiscoverySkeleton />}><TrendingStories /></Suspense></section>
-    <details className="discovery-panel publisher-panel" open>
-      <summary className="cursor-pointer text-xl font-extrabold">সংবাদমাধ্যম</summary>
-      {portals.length ? <ul className="publisher-list">{portals.map(portal => <li key={portal.id}><Link prefetch={false} href={feedHref(category, String(portal.id))} aria-current={portalId === String(portal.id) ? "page" : undefined} className="publisher-link"><span className="relative grid h-9 w-12 shrink-0 place-items-center overflow-hidden rounded bg-white text-sm font-bold text-slate-700">{portal.logo ? <NewsImage src={portal.logo} alt="" fill sizes="48px" className="object-contain p-1" /> : (portal.nameBn || portal.name).slice(0, 1)}</span><span className="min-w-0 flex-1">{portal.nameBn || portal.name}</span><span aria-hidden="true">›</span></Link></li>)}</ul> : <p className="muted py-5 text-sm">সংবাদমাধ্যমের তালিকা এখন পাওয়া যাচ্ছে না।</p>}
-    </details>
-  </aside>;
+    <section className="discovery-panel publisher-panel" aria-labelledby="publishers-heading">
+      <h2 id="publishers-heading" className="text-xl font-extrabold">সংবাদমাধ্যম</h2>
+      {portals.length ? <><PublisherLinks portals={portals.slice(0, 4)} category={category} portalId={portalId} />{portals.length > 4 && <details className="more-publishers"><summary>সব সংবাদমাধ্যম</summary><PublisherLinks portals={portals.slice(4)} category={category} portalId={portalId} /></details>}</> : <p className="muted py-5 text-sm">সংবাদমাধ্যমের তালিকা এখন পাওয়া যাচ্ছে না।</p>}
+    </section>
+    <a className="sidebar-top" href="#top">উপরে যান ↑</a>
+  </StickySidebar>;
 }
