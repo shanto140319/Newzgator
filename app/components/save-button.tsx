@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { actionRequest, beginAction, updateArticleState, useArticleState } from "./article-state";
+import { removeBookmark, saveBookmark } from "../lib/client-api";
+import { beginAction, updateArticleState, useArticleState } from "./article-state";
 export function SaveButton({ articleId, initialSaved = false }: { articleId: number; initialSaved?: boolean }) {
   const state = useArticleState(articleId);
   const saved = state?.saved ?? initialSaved;
@@ -9,7 +10,8 @@ export function SaveButton({ articleId, initialSaved = false }: { articleId: num
     if (!beginAction(articleId)) return;
     setError(false);
     try {
-      await actionRequest(saved ? "/api/bookmarks/" + articleId : "/api/bookmarks", saved ? "DELETE" : "POST", saved ? undefined : { articleId });
+      if (saved) await removeBookmark(articleId);
+      else await saveBookmark(articleId);
       updateArticleState(articleId, { saved: !saved });
     } catch { setError(true); } finally { updateArticleState(articleId, { busy: false }); }
   }

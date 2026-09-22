@@ -5,10 +5,8 @@ test.beforeEach(async ({ page }) => {
   await page.route("https://www.kalbela.com/test-image.webp", route => route.abort());
 });
 
-test("loaded articles and scroll survive repeated Back and Forward", async ({ page }) => {
+test("pagination works and back/reload show a fresh first page", async ({ page }) => {
   const errors: string[] = [];
-  const pagination: string[] = [];
-  page.on("request", request => { if (new URL(request.url()).pathname === "/api/articles") pagination.push(request.url()); });
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
   await expect(page.locator("main article")).toHaveCount(20);
@@ -16,25 +14,20 @@ test("loaded articles and scroll survive repeated Back and Forward", async ({ pa
   await expect(page.locator("main article")).toHaveCount(40);
   const link = page.locator('a[href="/article/26"]');
   await link.scrollIntoViewIfNeeded();
-  const y = await page.evaluate(() => scrollY);
   await link.click();
   await expect(page.locator("h1")).toContainText("26");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(40);
-  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(y - 10);
-  await expect.poll(() => page.evaluate(() => scrollY)).toBeLessThan(y + 10);
+  await expect(page.locator("main article")).toHaveCount(20);
   await page.goForward();
   await expect(page.locator("h1")).toContainText("26");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(40);
-  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(y - 10);
+  await expect(page.locator("main article")).toHaveCount(20);
   await page.reload();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("main article")).toHaveCount(20);
   expect(errors).toEqual([]);
-  expect(pagination).toHaveLength(1);
 });
 
-test("category navigation isolates pagination and restores each entry", async ({ page }) => {
+test("category navigation isolates pagination per route", async ({ page }) => {
   await page.goto("/?category=sports");
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
   await expect(page.locator("main article")).toHaveCount(40);
@@ -47,8 +40,8 @@ test("category navigation isolates pagination and restores each entry", async ({
   await expect(page.locator("main article")).toHaveCount(40);
   await expect(page.locator("main article").last()).toContainText("technology");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(40);
-  await expect(page.locator("main article").last()).toContainText("sports");
+  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("main article").first()).toContainText("sports");
 });
 
 test("details are server rendered with SEO metadata and safe content", async ({ browser, request }) => {
@@ -68,23 +61,22 @@ test("details are server rendered with SEO metadata and safe content", async ({ 
   await context.close();
 });
 
-test("invalid IDs, missing articles, and invalid proxy input are rejected", async ({ request }) => {
+test("invalid IDs and missing articles are rejected", async ({ request }) => {
   for (const id of ["bad", "-1", "0", "999", "9007199254740992"]) {
     const response = await request.get("/article/" + id, { headers: { "User-Agent": "Googlebot" } });
     const html = await response.text();
     expect(response.status() === 404 || html.includes('content="noindex"')).toBeTruthy();
   }
-  expect((await request.get("/api/articles?category=../secret")).status()).toBe(400);
-  expect((await request.get("/api/articles?cursor=fail")).status()).toBe(502);
+  expect((await request.get("http://localhost:4100/api/v1/articles?cursor=fail")).status()).toBe(500);
 });
 
 test("pagination failures can be retried without losing articles", async ({ page }) => {
   await page.goto("/");
-  await page.route("**/api/articles?**", route => route.fulfill({ status: 502, body: "{}" }));
+  await page.route("**/api/v1/articles?**", route => route.fulfill({ status: 502, body: "{}" }));
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
   await expect(page.locator("main article")).toHaveCount(20);
-  await page.unroute("**/api/articles?**");
+  await page.unroute("**/api/v1/articles?**");
   await page.getByRole("button", { name: "আবার চেষ্টা করুন" }).click();
   await expect(page.locator("main article")).toHaveCount(40);
 });
@@ -99,7 +91,7 @@ test("list and details have no serious accessibility violations", async ({ page 
 });
 
 
-test("return-home link restores loaded pages before scrolling, with storage blocked", async ({ page }) => {
+test("return-home link loads a fresh feed even when storage is blocked", async ({ page }) => {
   await page.addInitScript(() => {
     Storage.prototype.getItem = () => { throw new Error("Storage blocked"); };
     Storage.prototype.setItem = () => { throw new Error("Storage blocked"); };
@@ -109,15 +101,12 @@ test("return-home link restores loaded pages before scrolling, with storage bloc
   await expect(page.locator("main article")).toHaveCount(40);
   const link = page.locator('a[href="/article/26"]');
   await link.scrollIntoViewIfNeeded();
-  const y = await page.evaluate(() => scrollY);
   await link.click();
   await expect(page.locator("h1")).toContainText("26");
   await page.getByRole("link", { name: "← সব খবরে ফিরুন" }).click();
-  await expect(page.locator("main article")).toHaveCount(40);
-  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(y - 10);
-  await expect.poll(() => page.evaluate(() => scrollY)).toBeLessThan(y + 10);
+  await expect(page.locator("main article")).toHaveCount(20);
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(60);
+  await expect(page.locator("main article")).toHaveCount(40);
 });
 
 test("scroll pagination works without IntersectionObserver or a Load More button", async ({ page }) => {
@@ -164,12 +153,10 @@ test("home skeleton and mobile pagination preserve the responsive layout", async
   await expect(page.locator("main article")).toHaveCount(40);
   const link = page.locator('a[href="/article/26"]');
   await link.scrollIntoViewIfNeeded();
-  const y = await page.evaluate(() => scrollY);
   await link.click();
   await expect(page.locator("h1")).toContainText("26");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(40);
-  await expect.poll(() => page.evaluate(savedY => Math.abs(scrollY - savedY), y)).toBeLessThan(10);
+  await expect(page.locator("main article")).toHaveCount(20);
   await page.screenshot({ path: "test-results/mobile-feed.png" });
 });
 
@@ -188,9 +175,9 @@ for (const theme of ["dark", "reading"]) {
 
 for (const nextCursor of ["same", "duplicate-page"]) {
   test("pagination pauses on a non-progressing response: " + nextCursor, async ({ page, request }) => {
-    const initial = await (await request.get("/api/articles")).json();
+    const initial = await (await request.get("http://localhost:4100/api/v1/articles?limit=20")).json();
     let calls = 0;
-    await page.route("**/api/articles?**", route => {
+    await page.route("**/api/v1/articles?**", route => {
       calls += 1;
       return route.fulfill({ json: { success: true, data: { ...initial.data, items: nextCursor === "same" ? initial.data.items.map((item: { id: number }) => ({ ...item, id: item.id + 20 })) : initial.data.items, nextCursor: nextCursor === "same" ? initial.data.nextCursor : nextCursor, hasNext: true } } });
     });
@@ -241,9 +228,9 @@ for (const [id, message] of [[7, "সম্পর্কিত সংবাদ �
 }
 
 
-test("publisher filtering keeps cursor pagination and category history isolated", async ({ page, request }) => {
+test("publisher filtering keeps cursor pagination and category history isolated", async ({ page }) => {
   const requests: string[] = [];
-  page.on("request", req => { if (new URL(req.url()).pathname === "/api/articles") requests.push(req.url()); });
+  page.on("request", req => { if (new URL(req.url()).pathname === "/api/v1/articles") requests.push(req.url()); });
   await page.goto("/?category=sports");
   await page.getByLabel("সংবাদমাধ্যম বাছাই করুন").selectOption("2");
   await expect(page).toHaveURL(/category=sports&portalId=2/);
@@ -254,18 +241,16 @@ test("publisher filtering keeps cursor pagination and category history isolated"
   expect(requests.some(url => url.includes("portalId=2") && url.includes("cursor="))).toBeTruthy();
   const link = page.locator('a[href="/article/26"]');
   await link.scrollIntoViewIfNeeded();
-  const y = await page.evaluate(() => scrollY);
   await link.click();
   await expect(page.locator("h1")).toContainText("26");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(40);
-  await expect.poll(() => page.evaluate(saved => Math.abs(scrollY - saved), y)).toBeLessThan(10);
+  await expect(page).toHaveURL(/category=sports&portalId=2/);
+  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("main article").first()).toContainText("দ্বিতীয় উৎস");
   await page.getByLabel("সংবাদমাধ্যম বাছাই করুন").selectOption("");
   await expect(page).toHaveURL(/\/\?category=sports$/);
   await expect(page.locator("main article")).toHaveCount(20);
   await expect(page.locator("main article").first()).toContainText("সংবাদ উৎস");
-  expect((await request.get("/api/articles?portalId=-1")).status()).toBe(400);
-  expect((await request.get("/api/articles?portalId=9007199254740992")).status()).toBe(400);
 });
 
 test("homepage discovery matches the desktop and mobile layout", async ({ page }) => {

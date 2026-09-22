@@ -11,6 +11,11 @@ function article(id, category = "sports") { return {
 const readers = new Map();
 http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.setHeader("Access-Control-Allow-Headers", "Accept, Content-Type, X-User-Id");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+  res.setHeader("Vary", "Origin");
+  if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }
   res.setHeader("Content-Type", "application/json");
   const userId = req.headers["x-user-id"] || "anonymous";
   if (!readers.has(userId)) readers.set(userId, { saved: new Set(), reactions: new Map() });
@@ -26,7 +31,7 @@ http.createServer(async (req, res) => {
       const id = Number(url.pathname.split("/").at(-2));
       const activeReaction = reader.reactions.get(id) === body.reaction ? null : body.reaction;
       reader.reactions.set(id, activeReaction);
-      return res.end(JSON.stringify({ articleId: id, activeReaction, isReacted: !!activeReaction }));
+      return res.end(JSON.stringify({ success: true, data: { articleId: id, activeReaction, isReacted: !!activeReaction } }));
     }
     if (url.pathname === "/api/v1/bookmarks") { reader.saved.add(body.articleId); res.writeHead(201); return res.end(JSON.stringify({ success: true })); }
   }
