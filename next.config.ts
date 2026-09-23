@@ -3,7 +3,12 @@ const nextConfig: NextConfig = {
   images: { remotePatterns: [
     { protocol: "https", hostname: "samakal.com" },
     { protocol: "https", hostname: "www.bd-pratidin.com" },
+    { protocol: "https", hostname: "cdn.banglatribune.net" },
     { protocol: "https", hostname: "cdn.bd-pratidin.com" },
+    { protocol: "https", hostname: "cdn.deshrupantor.net" },
+    { protocol: "https", hostname: "cdn.dhakapost.com" },
+    { protocol: "https", hostname: "cdn.ittefaqbd.com" },
+    { protocol: "https", hostname: "cdn.jugantor.com" },
     { protocol: "https", hostname: "cdn.risingbd.com" },
     { protocol: "https", hostname: "dailyinqilab.com" },
     { protocol: "https", hostname: "ecdn.dhakatribune.net" },
@@ -12,6 +17,7 @@ const nextConfig: NextConfig = {
     { protocol: "https", hostname: "www.kalbela.com" },
     { protocol: "https", hostname: "media.prothomalo.com" },
     { protocol: "https", hostname: "www.dhakatimes24.com" },
+    { protocol: "https", hostname: "www.mzamin.com" },
     { protocol: "https", hostname: "www.thedailystar.net" },
   ], maximumRedirects: 0 },
   async headers() { return [{ source: "/:path*", headers: [

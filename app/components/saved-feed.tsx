@@ -110,7 +110,7 @@ export function SavedFeed({ labels }: { labels: Record<string, string> }) {
       {!visible.length && !error && !loading && (
         <div className="rounded-xl border border-[var(--line)] bg-[var(--paper)] p-10 text-center">
           <h2 className="text-xl font-bold">এখনও কোনো সংবাদ সংরক্ষণ করা নেই</h2>
-          <p className="muted mt-3">খবরের নিচে ‘পরে পড়ুন’ চাপলে এখানে পাবেন।</p>
+          <p className="muted mt-3">খবরের নিচে ‘পরে পড়ুন’ চাপলে এখানে পাবেন। ‘সংরক্ষণ সরান’ চাপলে তালিকা থেকে যাবে।</p>
           <Link href="/" className="source-button mt-5">
             সর্বশেষ খবর দেখুন
           </Link>

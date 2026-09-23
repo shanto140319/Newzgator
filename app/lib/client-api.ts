@@ -31,7 +31,8 @@ async function clientRequest<T>(
     ]),
   });
   if (response.status === 204) return null as T;
-  const result = (await response.json()) as ApiResult<T> & T;
+  const text = await response.text();
+  const result = (text ? JSON.parse(text) : {}) as ApiResult<T> & T;
   if (!response.ok || result.success === false) {
     throw new Error(result.message || "Request failed");
   }

@@ -16,6 +16,6 @@ export function SaveButton({ articleId, initialSaved = false }: { articleId: num
     } catch { setError(true); } finally { updateArticleState(articleId, { busy: false }); }
   }
   return <span className="inline-flex flex-col gap-1"><button type="button" onClick={toggle} disabled={state?.busy} aria-pressed={saved} className="save-button" title={saved ? "সংরক্ষণ থেকে সরান" : "পরে পড়ার জন্য সংরক্ষণ"}>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12v18l-6-4-6 4V3Z" /></svg>{saved ? "সংরক্ষিত" : "পরে পড়ুন"}
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12v18l-6-4-6 4V3Z" /></svg>{saved ? "সংরক্ষণ সরান" : "পরে পড়ুন"}
   </button>{error && <span role="alert" className="text-xs text-[var(--accent)]">সংরক্ষণ বদলানো যায়নি। আবার চেষ্টা করুন।</span>}</span>;
 }

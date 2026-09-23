@@ -191,6 +191,22 @@ for (const nextCursor of ["same", "duplicate-page"]) {
 }
 
 
+test("bookmark delete removes the article from the saved list", async ({ page }) => {
+  await page.goto("/");
+  const first = page.locator("main article").first();
+  const headline = (await first.locator("h2").innerText()).trim();
+  await first.getByRole("button", { name: "পরে পড়ুন" }).click();
+  await expect(first.getByRole("button", { name: "সংরক্ষণ সরান" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("navigation").getByRole("link", { name: "সংরক্ষিত" }).click();
+  await expect(page.locator("main article")).toHaveCount(1);
+  await expect(page.locator("main article h2")).toHaveText(headline);
+  await page.locator("main article").getByRole("button", { name: "সংরক্ষণ সরান" }).click();
+  await expect(page.locator("main article")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "এখনও কোনো সংবাদ সংরক্ষণ করা নেই" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "এখনও কোনো সংবাদ সংরক্ষণ করা নেই" })).toBeVisible();
+});
+
 test("legacy detail bookmarks redirect to the canonical path", async ({ request }) => {
   const response = await request.get("/article?id=2", { maxRedirects: 0 });
   expect(response.status()).toBe(308);

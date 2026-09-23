@@ -9,7 +9,7 @@ Run npm install, then npm run dev. Production: npm run build followed by npm sta
 
 ## Data and navigation
 
-The API origin is https://newzgator-api.onrender.com. Lists use /api/v1/articles?limit=20 and details use /api/v1/articles/{id}. NEXT_PUBLIC_ARTICLE_API_BASE_URL is used by the browser; ARTICLE_API_BASE_URL can override it on the server. SITE_URL is the frontend origin used for SEO metadata.
+The API origin is https://newzgator-api.onrender.com. Swagger UI: https://newzgator-api.onrender.com/swagger-ui/index.html# . Lists use /api/v1/articles?limit=20 and details use /api/v1/articles/{id}. Bookmarks use GET/POST /api/v1/bookmarks and DELETE /api/v1/bookmarks/{articleId}. NEXT_PUBLIC_ARTICLE_API_BASE_URL is used by the browser; ARTICLE_API_BASE_URL can override it on the server. SITE_URL is the frontend origin used for SEO metadata.
 
 
 - Categories come from /api/v1/categories; the selected category is encoded in the home URL.

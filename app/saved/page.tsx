@@ -18,7 +18,7 @@ export default async function SavedPage() {
         <div className="mx-auto max-w-4xl">
           <h1 className="text-3xl font-extrabold">সংরক্ষিত সংবাদ</h1>
           <p className="muted mt-2 mb-8">
-            পরে পড়ার জন্য রাখা খবর। এই ব্রাউজারেই আপনার তালিকা পাওয়া যাবে।
+            পরে পড়ার জন্য রাখা খবর। ‘সংরক্ষণ সরান’ চাপলে তালিকা থেকে মুছে যাবে।
           </p>
           <SavedFeed
             labels={Object.fromEntries(
