@@ -1,0 +1,16 @@
+---
+description: Newzgator public API docs and bookmark endpoints
+alwaysApply: true
+---
+
+# Newzgator API
+
+Use [Swagger UI](https://newzgator-api.onrender.com/swagger-ui/index.html#) as the source of truth for the public API at `https://newzgator-api.onrender.com`.
+
+## Bookmarks
+
+- `GET /api/v1/bookmarks` — list saved articles (`cursor`, `limit`)
+- `POST /api/v1/bookmarks` — body `{ "articleId": number }`
+- `DELETE /api/v1/bookmarks/{articleId}` — remove a saved article
+
+Send `X-User-Id` on client calls. Do not invent paths; check Swagger first.
