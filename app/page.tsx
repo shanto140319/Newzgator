@@ -1,8 +1,11 @@
+import { BreakingNewsSkeleton } from "./components/breaking-news-skeleton";
+import { FeedCategories } from "./components/feed-categories";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArticleFeed } from "./components/article-feed";
+import { BreakingNews } from "./components/breaking-news";
 import { DiscoverySidebar } from "./components/discovery-sidebar";
 import { FeedSkeleton } from "./components/feed-skeleton";
 import { Footer } from "./components/footer";
@@ -78,50 +81,25 @@ export default async function Home({ searchParams }: Props) {
   const label =
     categories?.find((c) => c.name === category)?.nameBn ?? category;
   const publisher = portals.find((p) => String(p.id) === portalId);
-  const today = new Intl.DateTimeFormat("bn-BD", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    weekday: "long",
-    timeZone: "Asia/Dhaka",
-  }).format(new Date());
   return (
     <div id="top" className="flex min-h-screen flex-col">
-      <Header
-        categories={categories ?? []}
-        activeCategory={category}
-        portalId={portalId}
-      />
+      <Header />
       <main
         id="main-content"
         tabIndex={-1}
         className="site-container flex-1 py-8 pb-16 max-sm:py-6"
       >
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">
-              {category ? label + " সংবাদ" : "আজকের সংবাদ"}
-            </h1>
-            <p className="muted mt-2 text-sm sm:text-base">
-              {publisher
-                ? (publisher.nameBn || publisher.name) + " থেকে সর্বশেষ সংবাদ"
-                : "দেশ ও বিশ্বের খবর, এক জায়গায়"}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-            {portalId && (
-              <Link
-                className="text-sm font-semibold text-[var(--accent)] hover:underline"
-                href={feedHref(category)}
-              >
-                সব সংবাদমাধ্যম ×
-              </Link>
-            )}
-            <time className="muted text-xs sm:text-sm">{today}</time>
-          </div>
-        </div>
+        <h1 className="sr-only">{category ? label + " সংবাদ" : "নিউজগেটর সংবাদ"}</h1>
+        {portalId && <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="muted text-sm">{publisher ? (publisher.nameBn || publisher.name) + " থেকে সর্বশেষ সংবাদ" : "নির্বাচিত সংবাদমাধ্যম"}</p>
+          <Link className="text-sm font-semibold text-[var(--accent)] hover:underline" href={feedHref(category)}>সব সংবাদমাধ্যম ×</Link>
+        </div>}
         <div className="home-grid">
           <div className="home-feed min-w-0">
+            <Suspense fallback={<BreakingNewsSkeleton />}>
+              <BreakingNews />
+            </Suspense>
+            <FeedCategories categories={categories ?? []} activeCategory={category} portalId={portalId} />
             <Suspense
               key={feedHref(category, portalId)}
               fallback={<FeedSkeleton />}

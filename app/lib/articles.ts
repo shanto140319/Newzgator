@@ -61,5 +61,6 @@ export type TrendingCluster = {
   clusterId: number;
   topicTitle: string;
   totalArticles: number;
-  leadArticle: Pick<Article, "id" | "mainImage">;
+  leadArticle: Pick<Article, "id" | "mainImage" | "headline"> & { publishedAt?: string; url?: string };
+  sourcePortals: { portalId: number; portalName: string; portalUrl: string; portalLogo: string | null }[];
 };

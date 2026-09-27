@@ -2,6 +2,7 @@
 
 import type { Article, ArticleListResponse } from "./articles";
 import { normalizeArticle } from "./normalize-article";
+import { imageUrl } from "./urls";
 import { getUserId } from "./user-id";
 
 const base = (
@@ -107,4 +108,21 @@ export async function postReaction(articleId: number, reaction: string) {
     { method: "POST", body: JSON.stringify({ reaction }) },
     20_000,
   );
+}
+
+export type SearchArticle = Pick<Article, "id" | "headline" | "summary" | "mainImage"> & { publisher: string };
+export async function searchArticles(q: string, page: number, signal: AbortSignal): Promise<{ items: SearchArticle[]; hasNext: boolean; total: number }> {
+  const data = await clientRequest<{ content: Article[]; hasNext: boolean; totalElements: number }>("/api/v1/articles/search?" + new URLSearchParams({ q, page: String(page), size: "15" }), { signal }, 20000);
+  if (!Array.isArray(data.content) || typeof data.hasNext !== "boolean" || !Number.isSafeInteger(data.totalElements)) throw new Error("Invalid search response");
+  return { items: data.content.filter(item => item && Number.isSafeInteger(item.id) && item.id > 0 && typeof item.headline === "string").map(item => ({ id: item.id, headline: item.headline, summary: typeof item.summary === "string" ? item.summary : "", mainImage: imageUrl(item.mainImage) ?? null, publisher: item.portal?.nameBn || item.portal?.name || "" })), hasNext: data.hasNext, total: data.totalElements };
+}
+
+export type ArticleComment = { id: number; articleId: number; displayName: string | null; avatarUrl: string | null; body: string; createdAt: string; updatedAt: string; editable: boolean };
+export async function fetchComments(articleId: number, cursor = "", signal?: AbortSignal): Promise<{ items: ArticleComment[]; nextCursor: string | null; hasNext: boolean }> {
+  const data = await clientRequest<{ items: ArticleComment[]; nextCursor?: string | null; hasNext: boolean }>(`/api/v1/articles/${articleId}/comments?` + new URLSearchParams({ limit: "10", ...(cursor ? { cursor } : {}) }), { signal });
+  if (!Array.isArray(data.items) || typeof data.hasNext !== "boolean" || (data.nextCursor != null && typeof data.nextCursor !== "string")) throw new Error("Invalid comments response");
+  return { items: data.items.filter(item => item && Number.isSafeInteger(item.id) && item.articleId === articleId && typeof item.body === "string").map(item => ({ ...item, displayName: typeof item.displayName === "string" ? item.displayName : null, avatarUrl: imageUrl(item.avatarUrl) ?? null })), nextCursor: data.nextCursor ?? null, hasNext: data.hasNext && !!data.nextCursor && data.nextCursor !== cursor };
+}
+export async function postComment(articleId: number, body: string) {
+  await clientRequest(`/api/v1/articles/${articleId}/comments`, { method: "POST", body: JSON.stringify({ body: body.trim() }) });
 }

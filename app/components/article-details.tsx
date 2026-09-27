@@ -1,3 +1,4 @@
+import { TrackedArticleLink } from "./tracked-article-link";
 import { NewsImage } from "./news-image";
 import Link from "next/link";
 import type { ArticleDetails } from "../lib/articles";
@@ -20,7 +21,7 @@ export function ArticleDetailsView({ article, categoryLabel }: { article: Articl
     {article.mainImage && <div className="detail-photo relative"><NewsImage src={article.mainImage} alt={article.headline} fill preload sizes="(max-width: 1023px) calc(100vw - 32px), 860px" className="object-cover" /></div>}
     <div className="detail-body whitespace-pre-line">{article.details.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
     <footer className="mt-8 flex flex-wrap items-center gap-5 border-t border-[var(--line)] pt-6">
-      {article.url && <a className="source-button" href={article.url} target="_blank" rel="noreferrer">মূল সংবাদ পড়ুন <span aria-hidden="true">↗</span></a>}
+      {article.url && <TrackedArticleLink articleId={article.id} sourceSurface="ARTICLE_DETAILS_SOURCE" className="source-button" href={article.url} target="_blank" rel="noreferrer">মূল সংবাদ পড়ুন <span aria-hidden="true">↗</span></TrackedArticleLink>}
       <ReactionBar articleId={article.id} reactions={article.articleReactions} /><SaveButton articleId={article.id} initialSaved={article.isBookmarked} />
     </footer>
   </article>;

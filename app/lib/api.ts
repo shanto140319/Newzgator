@@ -157,9 +157,13 @@ export const getPortals = cache(async (): Promise<Portal[]> => {
       url: safeUrl(item.url) ?? "",
     }));
 });
-export async function getTrending(): Promise<TrendingCluster[]> {
+export async function getTrending(options: { hours?: number; limit?: number; minArticles?: number } = {}): Promise<TrendingCluster[]> {
+  type RawPortal = { portalId?: unknown; portalName?: unknown; portalUrl?: unknown; portalLogo?: unknown };
+  const hours = options.hours ?? 24;
+  const limit = options.limit ?? 3;
+  const minArticles = options.minArticles ?? 2;
   const data: unknown = await request(
-    "/api/v1/trending/trending?hours=24&limit=3&minArticles=2",
+    `/api/v1/trending/trending?hours=${hours}&limit=${limit}&minArticles=${minArticles}`,
     10_000,
   );
   if (!Array.isArray(data)) throw new ApiError(502);
@@ -171,8 +175,7 @@ export async function getTrending(): Promise<TrendingCluster[]> {
         !Number.isSafeInteger(item.clusterId) ||
         seen.has(item.clusterId) ||
         typeof item.topicTitle !== "string" ||
-        !Number.isSafeInteger(item.totalArticles) ||
-        item.totalArticles < 1 ||
+        (!Number.isSafeInteger(item.totalArticles) && !Array.isArray(item.sourcePortals)) ||
         !Number.isSafeInteger(item.leadArticle?.id) ||
         item.leadArticle.id < 1
       )
@@ -180,15 +183,19 @@ export async function getTrending(): Promise<TrendingCluster[]> {
       seen.add(item.clusterId);
       return true;
     })
-    .slice(0, 3)
+    .slice(0, limit)
     .map((item) => ({
       clusterId: item.clusterId,
       topicTitle: item.topicTitle,
-      totalArticles: item.totalArticles,
+      totalArticles: Number.isSafeInteger(item.totalArticles) ? item.totalArticles : item.sourcePortals.length,
       leadArticle: {
         id: item.leadArticle.id,
+        url: safeUrl(item.leadArticle.url),
+        publishedAt: typeof item.leadArticle.publishedAt === "string" ? item.leadArticle.publishedAt : undefined,
         mainImage: imageUrl(item.leadArticle.mainImage) ?? null,
+        headline: typeof item.leadArticle.headline === "string" ? item.leadArticle.headline : item.topicTitle,
       },
+      sourcePortals: (Array.isArray(item.sourcePortals) ? item.sourcePortals as RawPortal[] : []).filter((portal) => Number.isSafeInteger(portal.portalId) && typeof portal.portalName === "string").slice(0, 20).map((portal) => ({ portalId: portal.portalId as number, portalName: portal.portalName as string, portalUrl: safeUrl(typeof portal.portalUrl === "string" ? portal.portalUrl : "") ?? "", portalLogo: imageUrl(typeof portal.portalLogo === "string" ? portal.portalLogo : null) ?? null })),
     }));
 }
 

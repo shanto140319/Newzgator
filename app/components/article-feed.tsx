@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import type { Article, Portal } from "../lib/articles";
 import { fetchArticles } from "../lib/client-api";
+import { feedLayouts } from "../lib/feed-layout";
 import { feedHref } from "../lib/feed-route";
 import { ArticlePreview } from "./article-preview";
 import { ArticleCardsSkeleton } from "./feed-skeleton";
@@ -157,6 +158,7 @@ export function ArticleFeed({
   }
 
   const [featured, ...rest] = items;
+  const layouts = feedLayouts(rest.length);
 
   return (
     <section
@@ -176,7 +178,7 @@ export function ArticleFeed({
         </div>
       )}
 
-      <ArticlePreview
+      <ArticlePreview sourceSurface="HOME_FEED"
         featured
         article={featured}
         label={categoryLabels[featured.category] ?? featured.category}
@@ -215,10 +217,12 @@ export function ArticleFeed({
               {filterPending && <span role="status">আসছে…</span>}
             </label>
           </div>
-          <div className="story-list">
-            {rest.map((article) => (
-              <ArticlePreview
+          <div className="mixed-story-list">
+            {rest.map((article, index) => (
+              <ArticlePreview sourceSurface="HOME_FEED"
                 key={article.id}
+                featured={layouts[index] === "featured"}
+                compact={layouts[index] === "grid"}
                 article={article}
                 label={categoryLabels[article.category] ?? article.category}
               />

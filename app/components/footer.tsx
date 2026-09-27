@@ -1,22 +1,17 @@
 import Link from "next/link";
+import Image from "next/image";
+import logo from "../../public/brand/newsgator-logo-english-v1.png";
 export function Footer() {
   return (
     <footer className="bg-[#0c1c34] text-white dark:bg-[#070b11] reading:bg-[#514438]">
       <div className="mx-auto flex w-[min(1240px,calc(100%-48px))] items-end justify-between gap-10 py-12 max-sm:block max-sm:w-[calc(100%-30px)] max-sm:py-10">
         <div>
           <Link
-            className="inline-flex items-center gap-2.5 text-2xl leading-none font-extrabold tracking-[-0.035em]"
+            className="brand bg-white"
             href="/"
+            aria-label="NewsGator হোম"
           >
-            <span
-              className="grid size-9 -rotate-3 place-items-center rounded-[11px_11px_4px_11px] bg-[#e9482b] text-lg font-extrabold text-white"
-              aria-hidden="true"
-            >
-              ন
-            </span>
-            <span>
-              নিউজ<span className="text-[#e9482b] reading:text-[#ffad92]">গেটর</span>
-            </span>
+            <Image className="brand-logo" src={logo} alt="NewsGator" sizes="(max-width: 640px) 180px, 248px" />
           </Link>
           <p className="mt-5 max-w-md text-sm leading-7 text-slate-400 reading:text-[#d6c8b5]">
             দেশ ও বিশ্বের গুরুত্বপূর্ণ সংবাদ এক পাতায়, সহজে ও দ্রুত।

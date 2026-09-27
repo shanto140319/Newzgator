@@ -1,3 +1,4 @@
+import { ArticleComments } from "../../components/article-comments";
 import { Suspense } from "react";
 import { RelatedArticles, RelatedArticlesSkeleton } from "../../components/related-articles";
 import type { Metadata } from "next";
@@ -26,10 +27,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ArticlePage({ params }: Props) {
   const [article, categories] = await Promise.all([load(params), getCategories().catch(() => [])]);
   return <div id="top" className="flex min-h-screen flex-col bg-[var(--paper)]">
-    <Header categories={categories} activeCategory={article.category} />
+    <Header />
     <main id="main-content" tabIndex={-1} className="site-container flex-1 py-8 pb-16 max-sm:py-6">
       <div className="detail-grid">
+      <div className="min-w-0">
       <ArticleDetailsView article={article} categoryLabel={categories.find(c => c.name === article.category)?.nameBn || article.category} />
+      <ArticleComments key={article.id} articleId={article.id} />
+      </div>
       <aside aria-labelledby="related-heading" className="related-panel lg:mt-13">
         <div className="border-b border-slate-100 px-5 py-5 dark:border-white/10 reading:border-[#e8ddc8]">
           <div className="mb-2 h-1 w-8 rounded-full bg-[#c83018]" aria-hidden="true" />
