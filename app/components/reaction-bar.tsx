@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations, useLocale } from "next-intl";
 import { useState } from "react";
 import { postReaction } from "../lib/client-api";
 import type { ArticleReactions } from "../lib/articles";
@@ -17,9 +18,7 @@ function ReactionIcon({ name, active }: { name: ReactionIconName; active: boolea
   if (name === "important") {
     return (
       <svg viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3 3.7 18h16.6L12 3Z" />
-        <path strokeLinecap="round" d="M12 9v4.5" />
-        <circle cx="12" cy="16.5" r=".7" fill="currentColor" stroke="none" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="m12 3 2.8 5.7 6.3.9-4.55 4.44 1.07 6.26L12 17.34l-5.62 2.96 1.07-6.26L2.9 9.6l6.3-.9L12 3Z" />
       </svg>
     );
   }
@@ -60,6 +59,9 @@ export function ReactionBar({
   reactions?: ArticleReactions | null;
   compact?: boolean;
 }) {
+  const t = useTranslations();
+  const locale = useLocale();
+
   const state = useArticleState(articleId);
   const reactions = state?.reactions ?? initial ?? null;
   const activeReaction = reactions?.currentUserReaction ?? null;
@@ -91,14 +93,14 @@ export function ReactionBar({
   }
 
   const items: Array<{ name: ReactionIconName; label: string; count: number; key: keyof typeof REACTION_KEYS }> = [
-    { name: "like", label: "পছন্দ", count: reactions?.likeCount ?? 0, key: "LIKE" },
-    { name: "dislike", label: "অপছন্দ", count: reactions?.dislikeCount ?? 0, key: "DISLIKE" },
-    { name: "important", label: "গুরুত্বপূর্ণ", count: reactions?.importantCount ?? 0, key: "IMPORTANT" },
-    { name: "inaccurate", label: "ভুল তথ্য", count: reactions?.inaccurateCount ?? 0, key: "INACCURATE" },
+    { name: "like", label: t("like"), count: reactions?.likeCount ?? 0, key: "LIKE" },
+    { name: "dislike", label: t("dislike"), count: reactions?.dislikeCount ?? 0, key: "DISLIKE" },
+    { name: "important", label: t("important"), count: reactions?.importantCount ?? 0, key: "IMPORTANT" },
+    { name: "inaccurate", label: t("inaccurate"), count: reactions?.inaccurateCount ?? 0, key: "INACCURATE" },
   ];
 
   return (
-    <div className={`flex items-center ${compact ? "gap-1" : "gap-1.5"}`} role="group" aria-label="পাঠকের প্রতিক্রিয়া">
+    <div className={`flex items-center ${compact ? "gap-1" : "gap-1.5"}`} role="group" aria-label={t("readerReactions")}>
       {items.map((item) => {
         const active = activeReaction === item.key;
         return (
@@ -111,19 +113,18 @@ export function ReactionBar({
             key={item.name}
             className={`${compact ? "h-7 min-w-10 px-1.5" : "h-8 min-w-11 px-2"} inline-flex cursor-pointer items-center justify-center gap-1 rounded-full border border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-400 reading:border-[#ded2bd] reading:bg-[#f7efdf] reading:text-[#756553] disabled:cursor-wait`}
             title={item.label}
-            aria-label={`${item.label}: ${item.count.toLocaleString("bn-BD")}`}
+            aria-label={`${item.label}: ${item.count.toLocaleString(locale)}`}
           >
             <span className="size-3.5 shrink-0">
               <ReactionIcon name={item.name} active={active} />
             </span>
-            {item.count.toLocaleString("bn-BD")}
+            {item.count.toLocaleString(locale)}
           </button>
         );
       })}
       {error && (
         <span role="alert" className="text-xs text-[var(--accent)]">
-          প্রতিক্রিয়া দেওয়া যায়নি। আবার চেষ্টা করুন।
-        </span>
+          {t("reactionCouldNotBeSavedPleaseTryAgain")}</span>
       )}
     </div>
   );

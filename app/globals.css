@@ -581,10 +581,12 @@ h1, h2, h3 { font-size: var(--type-headline-size); line-height: var(--type-headl
 .feed-grid-card .row-photo { border-radius:0; }
 .feed-grid-card .story-source { position:absolute; top:10px; left:10px; right:10px; z-index:1; width:fit-content; max-width:calc(100% - 20px); margin:0; padding:4px 8px; gap:6px; border-radius:6px; background:rgba(255,255,255,.94); color:#142238; }
 .feed-grid-card .story-copy { display:flex; flex-direction:column; padding:12px 16px 16px; }
-.feed-grid-card .story-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:5; overflow:hidden; }
+.feed-grid-card .story-summary, .story-row .story-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:5; overflow:hidden; }
 .feed-grid-card .story-actions { margin-top:auto; padding-top:12px; }
 [data-article-feed] .story-title { font-size:18px; }
 [data-article-feed] .story-summary { font-size:14px; }
 @media(max-width:640px) {
  .mixed-story-list { grid-template-columns:minmax(0,1fr); gap:20px; }
 }
+
+

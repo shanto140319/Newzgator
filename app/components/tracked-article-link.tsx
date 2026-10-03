@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ComponentProps } from "react";
 import { getUserId } from "../lib/user-id";
 
-export const sourceSurfaces = ["HOME_BREAKING", "HOME_BREAKING_RELATED", "HOME_TRENDING", "HOME_FEED", "ARTICLE_DETAILS_SOURCE", "ARTICLE_DETAILS_RELATED"] as const;
+export const sourceSurfaces = ["TRENDING", "BREAKING", "FEED", "DETAILS", "RELATED", "RECOMMENDED", "SEARCH"] as const;
 export type SourceSurface = typeof sourceSurfaces[number];
 const base = (process.env.NEXT_PUBLIC_ARTICLE_API_BASE_URL ?? "https://newzgator-api.onrender.com").replace(/\/$/, "");
 

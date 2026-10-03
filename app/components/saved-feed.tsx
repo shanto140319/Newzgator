@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { ArticleListResponse } from "../lib/articles";
@@ -11,6 +12,8 @@ type Data = ArticleListResponse["data"];
 const empty: Data = { items: [], nextCursor: null, hasNext: false, size: 0 };
 
 export function SavedFeed({ labels }: { labels: Record<string, string> }) {
+  const t = useTranslations();
+
   const [data, setData] = useState(empty);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -62,7 +65,7 @@ export function SavedFeed({ labels }: { labels: Record<string, string> }) {
   }, [data]);
 
   const loadRef = useRef(load);
-  loadRef.current = load;
+  useEffect(() => { loadRef.current = load; }, [load]);
 
   useEffect(() => {
     void loadRef.current("replace");
@@ -99,7 +102,7 @@ export function SavedFeed({ labels }: { labels: Record<string, string> }) {
   }, [data.hasNext, error, loading, load]);
 
   return (
-    <section aria-label="সংরক্ষিত সংবাদ" aria-busy={loading && !visible.length}>
+    <section aria-label={t("savedArticles")} aria-busy={loading && !visible.length}>
       {visible.map((article) => (
         <ArticlePreview
           key={article.id}
@@ -109,25 +112,23 @@ export function SavedFeed({ labels }: { labels: Record<string, string> }) {
       ))}
       {!visible.length && !error && !loading && (
         <div className="rounded-xl border border-[var(--line)] bg-[var(--paper)] p-10 text-center">
-          <h2 className="text-xl font-bold">এখনও কোনো সংবাদ সংরক্ষণ করা নেই</h2>
-          <p className="muted mt-3">খবরের নিচে ‘পরে পড়ুন’ চাপলে এখানে পাবেন। ‘সংরক্ষণ সরান’ চাপলে তালিকা থেকে যাবে।</p>
+          <h2 className="text-xl font-bold">{t("noSavedArticlesYet")}</h2>
+          <p className="muted mt-3">{t("selectSaveBeneathAStoryToFindItHereSelectUnsaveToRemoveIt")}</p>
           <Link href="/" className="source-button mt-5">
-            সর্বশেষ খবর দেখুন
-          </Link>
+            {t("browseLatestNews")}</Link>
         </div>
       )}
       {loading && <ArticleCardsSkeleton />}
       {error && (
         <div role="alert" className="py-6 text-center">
-          <p>সংরক্ষিত সংবাদ আনা যায়নি।</p>
+          <p>{t("savedArticlesCouldNotBeLoaded")}</p>
           <button
             type="button"
             className="source-button mt-3"
             onClick={() => void load(visible.length ? "append" : "replace")}
             disabled={loading}
           >
-            আবার চেষ্টা করুন
-          </button>
+            {t("tryAgain")}</button>
         </div>
       )}
       {data.hasNext && <div ref={sentinel} data-saved-sentinel className="h-10" />}

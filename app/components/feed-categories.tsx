@@ -1,10 +1,16 @@
+import { localizedName } from "../lib/localized-name";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import type { Category } from "../lib/articles";
 import { feedHref } from "../lib/feed-route";
 import { CategoryScroll } from "./category-scroll";
 import styles from "./feed-categories.module.css";
 export function FeedCategories({ categories, activeCategory, portalId, loading = false }: { categories: Category[]; activeCategory: string; portalId: string; loading?: boolean }) {
- return (      <nav aria-label="সংবাদ বিভাগ" id="feed-categories" className={styles.categoryNav}>
+  const locale = useLocale();
+
+  const t = useTranslations();
+
+ return (      <nav aria-label={t("newsCategories")} id="feed-categories" className={styles.categoryNav}>
         <CategoryScroll className={styles.categoryInner}>
           {loading ? (
             <span
@@ -20,7 +26,7 @@ export function FeedCategories({ categories, activeCategory, portalId, loading =
             </span>
           ) : (
             [
-              { name: "", nameBn: "সর্বশেষ", nameEn: "Latest" },
+              { name: "", nameBn: t("latest"), nameEn: "Latest" },
               ...categories,
             ].map((category) => (
               <Link
@@ -32,7 +38,7 @@ export function FeedCategories({ categories, activeCategory, portalId, loading =
                 }
                 className={styles.categoryLink}
               >
-                {category.nameBn || category.nameEn || category.name}
+                {localizedName(category, locale)}
               </Link>
             ))
           )}

@@ -1,8 +1,11 @@
 "use client";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 
 export function StickySidebar({ children }: { children: ReactNode }) {
+  const t = useTranslations();
+
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const sidebar = ref.current;
@@ -13,5 +16,5 @@ export function StickySidebar({ children }: { children: ReactNode }) {
     observer.observe(sidebar);
     return () => observer.disconnect();
   }, []);
-  return <aside ref={ref} aria-label="সংবাদ আবিষ্কার" className="discovery-sidebar">{children}</aside>;
+  return <aside ref={ref} aria-label={t("discoverNews")} className="discovery-sidebar">{children}</aside>;
 }

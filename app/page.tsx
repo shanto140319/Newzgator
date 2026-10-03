@@ -1,3 +1,5 @@
+import { localizedName } from "./lib/localized-name";
+import { getLocale, getTranslations } from "next-intl/server";
 import { BreakingNewsSkeleton } from "./components/breaking-news-skeleton";
 import { FeedCategories } from "./components/feed-categories";
 import type { Metadata } from "next";
@@ -34,13 +36,17 @@ async function filtersFor(searchParams: Props["searchParams"]) {
 export async function generateMetadata({
   searchParams,
 }: Props): Promise<Metadata> {
+  const locale = await getLocale();
+
+  const t = await getTranslations();
+
   const { category, portalId } = await filtersFor(searchParams);
   const categories = await getCategories().catch(() => []);
-  const label = categories.find((c) => c.name === category)?.nameBn ?? category;
+  const label = localizedName(categories.find((c) => c.name === category), locale, category);
   return {
     title: category
-      ? label + " সংবাদ — নিউজগেটর"
-      : "নিউজগেটর — সব খবর এক পাতায়",
+      ? t("categoryTitle", { category: label })
+      : t("newsgatorAllYourNewsInOnePlace"),
     alternates: { canonical: feedHref(category, portalId) },
   };
 }
@@ -71,6 +77,10 @@ async function ServerArticleFeed({
   );
 }
 export default async function Home({ searchParams }: Props) {
+  const locale = await getLocale();
+
+  const t = await getTranslations();
+
   const { category, portalId } = await filtersFor(searchParams);
   const [categories, portals] = await Promise.all([
     getCategories().catch(() => null),
@@ -79,7 +89,7 @@ export default async function Home({ searchParams }: Props) {
   if (category && categories && !categories.some((c) => c.name === category))
     notFound();
   const label =
-    categories?.find((c) => c.name === category)?.nameBn ?? category;
+    localizedName(categories?.find((c) => c.name === category), locale, category);
   const publisher = portals.find((p) => String(p.id) === portalId);
   return (
     <div id="top" className="flex min-h-screen flex-col">
@@ -89,10 +99,10 @@ export default async function Home({ searchParams }: Props) {
         tabIndex={-1}
         className="site-container flex-1 py-8 pb-16 max-sm:py-6"
       >
-        <h1 className="sr-only">{category ? label + " সংবাদ" : "নিউজগেটর সংবাদ"}</h1>
+        <h1 className="sr-only">{category ? t("categoryNews", { category: label }) : t("newsgatorNews")}</h1>
         {portalId && <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p className="muted text-sm">{publisher ? (publisher.nameBn || publisher.name) + " থেকে সর্বশেষ সংবাদ" : "নির্বাচিত সংবাদমাধ্যম"}</p>
-          <Link className="text-sm font-semibold text-[var(--accent)] hover:underline" href={feedHref(category)}>সব সংবাদমাধ্যম ×</Link>
+          <p className="muted text-sm">{publisher ? t("publisherLatest", { publisher: localizedName(publisher, locale) }) : t("selectedPublisher")}</p>
+          <Link className="text-sm font-semibold text-[var(--accent)] hover:underline" href={feedHref(category)}>{t("allPublishersAlt")}</Link>
         </div>}
         <div className="home-grid">
           <div className="home-feed min-w-0">
@@ -111,7 +121,7 @@ export default async function Home({ searchParams }: Props) {
                 labels={Object.fromEntries(
                   (categories ?? []).map((c) => [
                     c.name,
-                    c.nameBn || c.nameEn || c.name,
+                    localizedName(c, locale),
                   ]),
                 )}
               />

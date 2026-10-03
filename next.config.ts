@@ -1,3 +1,4 @@
+import createNextIntlPlugin from "next-intl/plugin";
 import { imageHosts } from "./app/lib/image-hosts";
 import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
@@ -22,4 +23,4 @@ const nextConfig: NextConfig = {
     ];
   },
 };
-export default nextConfig;
+export default createNextIntlPlugin()(nextConfig);

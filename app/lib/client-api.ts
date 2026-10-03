@@ -111,11 +111,11 @@ export async function postReaction(articleId: number, reaction: string) {
   );
 }
 
-export type SearchArticle = Pick<Article, "id" | "headline" | "summary" | "mainImage"> & { publisher: string };
+export type SearchArticle = Pick<Article, "id" | "headline" | "summary" | "mainImage"> & { publisher: string; publisherEn: string };
 export async function searchArticles(q: string, page: number, signal: AbortSignal): Promise<{ items: SearchArticle[]; hasNext: boolean; total: number }> {
   const data = await clientRequest<{ content: Article[]; hasNext: boolean; totalElements: number }>("/api/v1/articles/search?" + new URLSearchParams({ q, page: String(page), size: "15" }), { signal }, 20000);
   if (!Array.isArray(data.content) || typeof data.hasNext !== "boolean" || !Number.isSafeInteger(data.totalElements)) throw new Error("Invalid search response");
-  return { items: data.content.filter(item => item && Number.isSafeInteger(item.id) && item.id > 0 && typeof item.headline === "string").map(item => ({ id: item.id, headline: item.headline, summary: typeof item.summary === "string" ? item.summary : "", mainImage: imageUrl(item.mainImage) ?? null, publisher: item.portal?.nameBn || item.portal?.name || "" })), hasNext: data.hasNext, total: data.totalElements };
+  return { items: data.content.filter(item => item && Number.isSafeInteger(item.id) && item.id > 0 && typeof item.headline === "string").map(item => ({ id: item.id, headline: item.headline, summary: typeof item.summary === "string" ? item.summary : "", mainImage: imageUrl(item.mainImage) ?? null, publisher: item.portal?.nameBn || item.portal?.name || "", publisherEn: item.portal?.nameEn || item.portal?.name || "" })), hasNext: data.hasNext, total: data.totalElements };
 }
 
 export type ArticleComment = { id: number; articleId: number; displayName: string | null; avatarUrl: string | null; body: string; createdAt: string; updatedAt: string; editable: boolean };

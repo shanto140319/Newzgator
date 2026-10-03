@@ -1,4 +1,7 @@
 "use client";
+import { localizedName } from "../lib/localized-name";
+
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import type { Article, Portal } from "../lib/articles";
@@ -42,6 +45,10 @@ export function ArticleFeed({
   initialHasNext,
   isFallback = false,
 }: ArticleFeedProps) {
+  const locale = useLocale();
+
+  const t = useTranslations();
+
   const router = useRouter();
   const [filterPending, startTransition] = useTransition();
   const [feed, setFeed] = useState<FeedState>({
@@ -53,7 +60,7 @@ export function ArticleFeed({
   const [isLoading, setIsLoading] = useState(false);
   const [autoLoadPaused, setAutoLoadPaused] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState("");
-  const notice = isFallback ? "লাইভ সংবাদ আনা যায়নি। আবার চেষ্টা করুন।" : "";
+  const notice = isFallback ? t("liveNewsCouldNotBeLoadedPleaseTryAgain") : "";
   const loadMoreInFlightRef = useRef(false);
   const controllerRef = useRef<AbortController | null>(null);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -101,13 +108,13 @@ export function ArticleFeed({
       setAutoLoadPaused(false);
     } catch {
       if (controllerRef.current?.signal.aborted) return;
-      setLoadMoreError("নতুন খবর আনা যায়নি। আবার চেষ্টা করুন।");
+      setLoadMoreError(t("moreNewsCouldNotBeLoadedPleaseTryAgain"));
       setAutoLoadPaused(true);
     } finally {
       loadMoreInFlightRef.current = false;
       setIsLoading(false);
     }
-  }, [category, portalId, cursor, hasNext, items]);
+  }, [category, portalId, cursor, hasNext, items, t]);
 
   useEffect(() => {
     if (!hasNext || isLoading || autoLoadPaused || !sentinel.current) return;
@@ -148,11 +155,10 @@ export function ArticleFeed({
           !
         </span>
         <h2 className="mt-4 text-xl font-extrabold">
-          {isFallback ? "সংবাদ আনা যায়নি" : "এখনও কোনো খবর পাওয়া যায়নি"}
+          {isFallback ? t("newsCouldNotBeLoaded") : t("noNewsFoundYet")}
         </h2>
         <p className="mt-1 text-slate-600 dark:text-slate-400 reading:text-[#756553]">
-          কিছুক্ষণ পর আবার পেজটি রিফ্রেশ করুন।
-        </p>
+          {t("pleaseRefreshThePageInAMoment")}</p>
       </section>
     );
   }
@@ -164,7 +170,7 @@ export function ArticleFeed({
     <section
       data-article-feed
       className="grid gap-6"
-      aria-label="সর্বশেষ সংবাদ"
+      aria-label={t("latestNews")}
     >
       {notice && (
         <div
@@ -178,7 +184,7 @@ export function ArticleFeed({
         </div>
       )}
 
-      <ArticlePreview sourceSurface="HOME_FEED"
+      <ArticlePreview sourceSurface="FEED"
         featured
         article={featured}
         label={categoryLabels[featured.category] ?? featured.category}
@@ -188,12 +194,11 @@ export function ArticleFeed({
         <div className="mt-0">
           <div className="mb-5 flex items-baseline justify-between gap-5 border-b border-slate-200 pb-3 dark:border-white/10 reading:border-[#d8ccb5]">
             <h2 className="text-2xl font-extrabold tracking-[-0.025em] reading:font-serif">
-              সর্বশেষ খবর
-            </h2>
+              {t("latestStories")}</h2>
             <label className="muted flex items-center gap-2 text-xs">
-              <span className="sr-only">সংবাদমাধ্যম বাছাই করুন</span>
+              <span className="sr-only">{t("chooseAPublisher")}</span>
               <select
-                aria-label="সংবাদমাধ্যম বাছাই করুন"
+                aria-label={t("chooseAPublisher")}
                 value={portalId}
                 disabled={filterPending}
                 className="publisher-select"
@@ -203,23 +208,23 @@ export function ArticleFeed({
                   )
                 }
               >
-                <option value="">সব সংবাদমাধ্যম</option>
+                <option value="">{t("allPublishers")}</option>
                 {portalId &&
                   !portals.some((p) => String(p.id) === portalId) && (
-                    <option value={portalId}>নির্বাচিত সংবাদমাধ্যম</option>
+                    <option value={portalId}>{t("selectedPublisher")}</option>
                   )}
                 {portals.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.nameBn || p.name}
+                    {localizedName(p, locale)}
                   </option>
                 ))}
               </select>
-              {filterPending && <span role="status">আসছে…</span>}
+              {filterPending && <span role="status">{t("loading")}</span>}
             </label>
           </div>
           <div className="mixed-story-list">
             {rest.map((article, index) => (
-              <ArticlePreview sourceSurface="HOME_FEED"
+              <ArticlePreview sourceSurface="FEED"
                 key={article.id}
                 featured={layouts[index] === "featured"}
                 compact={layouts[index] === "grid"}
@@ -245,7 +250,7 @@ export function ArticleFeed({
                 className="size-7 animate-spin rounded-full border-2 border-slate-200 border-t-[#e9482b] dark:border-white/15 dark:border-t-[#ff8069]"
                 aria-hidden="true"
               />
-              <span>আরও খবর আসছে…</span>
+              <span>{t("loadingMoreNews")}</span>
             </>
           )}
           {autoLoadPaused && (
@@ -259,12 +264,11 @@ export function ArticleFeed({
                 }}
                 type="button"
               >
-                আবার চেষ্টা করুন
-              </button>
+                {t("tryAgain")}</button>
             </>
           )}
           {!isLoading && !autoLoadPaused && (
-            <span>আরও খবর দেখতে স্ক্রল করুন</span>
+            <span>{t("scrollForMoreNews")}</span>
           )}
         </div>
       )}

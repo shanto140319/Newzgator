@@ -16,3 +16,5 @@
 .pagination button { padding:10px; background:var(--soft); border-radius:8px; cursor:pointer; }
 .pagination button:disabled { opacity:.4; cursor:default; }
 @media(max-width:640px) { .dialog { padding:16px; } .photo { width:80px; } }
+
+.result:hover .summary, .result:focus-within .summary { -webkit-line-clamp:unset; display:block; overflow:visible; }

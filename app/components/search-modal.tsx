@@ -1,12 +1,16 @@
 "use client";
+import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import Link from "next/link";
+import { TrackedArticleLink } from "./tracked-article-link";
 import { searchArticles, type SearchArticle } from "../lib/client-api";
 import { NewsImage } from "./news-image";
 import header from "./header.module.css";
 import styles from "./search-modal.module.css";
 
 export function SearchModal() {
+  const t = useTranslations();
+  const locale = useLocale();
+
   const dialog = useRef<HTMLDialogElement>(null);
   const controller = useRef<AbortController | null>(null);
   const [query, setQuery] = useState("");
@@ -37,19 +41,19 @@ export function SearchModal() {
   }
   return <>
     <form className={header.search} role="search" onSubmit={submit}>
-      <label className="sr-only" htmlFor="site-search">খবর খুঁজুন</label><span aria-hidden="true" className={header.searchIcon}>⌕</span>
-      <input id="site-search" type="search" placeholder="খবর বা বিষয় খুঁজুন" value={query} onChange={e => setQuery(e.target.value)} maxLength={200} required />
-      <button type="submit">খুঁজুন</button>
+      <label className="sr-only" htmlFor="site-search">{t("searchNews")}</label><span aria-hidden="true" className={header.searchIcon}>⌕</span>
+      <input id="site-search" type="search" placeholder={t("searchNewsOrTopics")} value={query} onChange={e => setQuery(e.target.value)} maxLength={200} required />
+      <button type="submit">{t("search")}</button>
     </form>
     <dialog ref={dialog} className={styles.dialog} aria-labelledby="search-title" onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === event.currentTarget) { const rect = event.currentTarget.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) close(); } }}>
-      <div className={styles.top}><h2 id="search-title">সংবাদ অনুসন্ধান</h2><button type="button" onClick={close} aria-label="অনুসন্ধান বন্ধ করুন">✕</button></div>
-      <form className={header.search} role="search" onSubmit={submit}><label className="sr-only" htmlFor="modal-search">খবর খুঁজুন</label><input id="modal-search" type="search" value={query} onChange={e => setQuery(e.target.value)} maxLength={200} required /><button type="submit">খুঁজুন</button></form>
+      <div className={styles.top}><h2 id="search-title">{t("searchArticles")}</h2><button type="button" onClick={close} aria-label={t("closeSearch")}>✕</button></div>
+      <form className={header.search} role="search" onSubmit={submit}><label className="sr-only" htmlFor="modal-search">{t("searchNews")}</label><input id="modal-search" type="search" value={query} onChange={e => setQuery(e.target.value)} maxLength={200} required /><button type="submit">{t("search")}</button></form>
       <div className={styles.results} aria-busy={loading}>
-        {loading ? <p role="status">খবর খোঁজা হচ্ছে…</p> : error ? <div role="alert"><p>অনুসন্ধান করা যাচ্ছে না। আবার চেষ্টা করুন।</p><button type="button" onClick={() => void run(searched, page)}>আবার চেষ্টা করুন</button></div> : <>
-          <p role="status" className={styles.count}>“{searched}” — {total.toLocaleString("bn-BD")}টি ফলাফল</p>
-          {!items.length && <p>কোনো সংবাদ পাওয়া যায়নি। অন্য শব্দ দিয়ে খুঁজুন।</p>}
-          <ul>{items.map(item => <li key={item.id}><Link href={`/article/${item.id}`} prefetch={false} onClick={close} className={styles.result}><div><span className={styles.count}>{item.publisher}</span><h3>{item.headline}</h3><p className={styles.summary}>{item.summary}</p></div>{item.mainImage && <div className={styles.photo}><NewsImage src={item.mainImage} alt="" fill sizes="100px" className="object-cover" /></div>}</Link></li>)}</ul>
-          {(page > 0 || hasNext) && <nav className={styles.pagination} aria-label="অনুসন্ধানের পৃষ্ঠা"><button type="button" disabled={page === 0} onClick={() => void run(searched, page - 1)}>আগের পৃষ্ঠা</button><span>{(page + 1).toLocaleString("bn-BD")}</span><button type="button" disabled={!hasNext} onClick={() => void run(searched, page + 1)}>পরের পৃষ্ঠা</button></nav>}
+        {loading ? <p role="status">{t("searchingForNews")}</p> : error ? <div role="alert"><p>{t("searchIsUnavailablePleaseTryAgain")}</p><button type="button" onClick={() => void run(searched, page)}>{t("tryAgain")}</button></div> : <>
+          <p role="status" className={styles.count}>{t("resultCount", { query: searched, count: total.toLocaleString(locale) })}</p>
+          {!items.length && <p>{t("noArticlesFoundTryAnotherSearch")}</p>}
+          <ul>{items.map(item => <li key={item.id}><TrackedArticleLink articleId={item.id} sourceSurface="SEARCH" href={`/article/${item.id}`} prefetch={false} onClick={close} className={styles.result}><div><span className={styles.count}>{locale === "en" ? item.publisherEn : item.publisher}</span><h3>{item.headline}</h3><p className={styles.summary}>{item.summary}</p></div>{item.mainImage && <div className={styles.photo}><NewsImage src={item.mainImage} alt="" fill sizes="100px" className="object-cover" /></div>}</TrackedArticleLink></li>)}</ul>
+          {(page > 0 || hasNext) && <nav className={styles.pagination} aria-label={t("searchPagination")}><button type="button" disabled={page === 0} onClick={() => void run(searched, page - 1)}>{t("previousPage")}</button><span>{(page + 1).toLocaleString(locale)}</span><button type="button" disabled={!hasNext} onClick={() => void run(searched, page + 1)}>{t("nextPage")}</button></nav>}
         </>}
       </div>
     </dialog>
