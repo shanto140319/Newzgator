@@ -119,5 +119,11 @@
   "categoryTitle": "{category} সংবাদ — নিউজগেটর",
   "publisherLatest": "{publisher} থেকে সর্বশেষ সংবাদ",
   "articleTitle": "{headline} — নিউজগেটর",
-  "resultCount": "“{query}” — {count}টি ফলাফল"
+  "resultCount": "“{query}” — {count}টি ফলাফল",
+  "breaking": "ব্রেকিং",
+  "last12Hours": "গত ১২ ঘণ্টা",
+  "breakingScroll": "ব্রেকিং সংবাদ — আরও খবরের জন্য পাশে স্ক্রল করুন",
+  "previousBreaking": "আগের ব্রেকিং সংবাদ",
+  "nextBreaking": "পরের ব্রেকিং সংবাদ",
+  "loadingPublishers": "সংবাদমাধ্যম লোড হচ্ছে"
 }

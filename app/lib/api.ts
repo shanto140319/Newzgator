@@ -25,9 +25,13 @@ export class ApiError extends Error {
   }
 }
 async function request(path: string, timeoutMs = requestTimeoutMs) {
-  const id = (await cookies()).get("news-reader")?.value;
+  // Public data can be reused when a language change re-renders the route.
+  const publicLifetime = path === "/api/v1/categories" || path === "/api/v1/portals"
+    ? 300
+    : path.startsWith("/api/v1/trending/trending?") ? 30 : 0;
+  const id = publicLifetime ? undefined : (await cookies()).get("news-reader")?.value;
   const response = await fetch(base + path, {
-    cache: "no-store",
+    ...(publicLifetime ? { next: { revalidate: publicLifetime } } : { cache: "no-store" as const }),
     redirect: "error",
     headers: { Accept: "application/json", ...(id ? { "X-User-Id": id } : {}) },
     signal: AbortSignal.timeout(timeoutMs),
@@ -225,3 +229,4 @@ export async function getBookmarks(
     size: data.items.length,
   };
 }
+

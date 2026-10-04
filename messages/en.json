@@ -119,5 +119,11 @@
   "categoryTitle": "{category} news — NewsGator",
   "publisherLatest": "Latest news from {publisher}",
   "articleTitle": "{headline} — NewsGator",
-  "resultCount": "“{query}” — {count} results"
+  "resultCount": "“{query}” — {count} results",
+  "breaking": "Breaking",
+  "last12Hours": "Last 12 hours",
+  "breakingScroll": "Breaking news — scroll horizontally for more stories",
+  "previousBreaking": "Previous breaking stories",
+  "nextBreaking": "Next breaking stories",
+  "loadingPublishers": "Loading publishers"
 }

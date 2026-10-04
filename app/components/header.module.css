@@ -27,3 +27,7 @@
 @media(max-width:380px) { .headerMain { grid-template-columns:minmax(0,1fr); } .headerTools { grid-row:2; justify-content:space-between; } .search { grid-row:3; } }
 
 @media(min-width:641px) and (max-width:1100px) { .headerMain { grid-template-columns:minmax(0,1fr) auto; gap:12px; padding-block:12px; } .headerTools { gap:8px; } .search { grid-column:1 / -1; grid-row:2; max-width:none; } }
+.siteHeader { box-shadow:0 2px 12px rgb(20 42 78 / 4%); }
+.utilityBar { background:#142747; color:#e8eef9; }
+.search { background:var(--soft); border-color:var(--line); }
+.search button { background:#245bd6; color:white; box-shadow:0 3px 8px #245bd626; }

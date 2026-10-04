@@ -64,6 +64,8 @@ export function ArticleFeed({
   const loadMoreInFlightRef = useRef(false);
   const controllerRef = useRef<AbortController | null>(null);
   const sentinel = useRef<HTMLDivElement>(null);
+  const completedCursors = useRef(new Set<string>());
+  const autoLoadRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     clearLegacyFeedCache();
@@ -71,7 +73,7 @@ export function ArticleFeed({
   }, []);
 
   const loadMore = useCallback(async () => {
-    if (loadMoreInFlightRef.current || !hasNext) return;
+    if (loadMoreInFlightRef.current || !hasNext || completedCursors.current.has(cursor ?? "")) return;
 
     loadMoreInFlightRef.current = true;
     setIsLoading(true);
@@ -85,13 +87,14 @@ export function ArticleFeed({
         controller.signal,
       );
 
-      if (data.hasNext && (!data.nextCursor || data.nextCursor === cursor)) {
+      if (data.hasNext && (!data.nextCursor || (data.nextCursor === cursor || completedCursors.current.has(data.nextCursor)))) {
         throw new Error("Cursor did not advance");
       }
       const existingIds = new Set(items.map((item) => item.id));
       if (data.hasNext && !data.items.some((item) => !existingIds.has(item.id))) {
         throw new Error("Pagination returned no new articles");
       }
+      completedCursors.current.add(cursor ?? "");
       setFeed((current) => {
         const ids = new Set(current.items.map((item) => item.id));
         const added = data.items.filter((item) => {
@@ -117,7 +120,13 @@ export function ArticleFeed({
   }, [category, portalId, cursor, hasNext, items, t]);
 
   useEffect(() => {
-    if (!hasNext || isLoading || autoLoadPaused || !sentinel.current) return;
+    autoLoadRef.current = () => {
+      if (!isLoading && !autoLoadPaused) void loadMore();
+    };
+  }, [isLoading, autoLoadPaused, loadMore]);
+
+  useEffect(() => {
+    if (!hasNext || !sentinel.current) return;
     if (typeof IntersectionObserver === "undefined") {
       const checkPosition = () => {
         if (
@@ -125,7 +134,7 @@ export function ArticleFeed({
           sentinel.current.getBoundingClientRect().top <=
             window.innerHeight + 300
         )
-          void loadMore();
+          autoLoadRef.current();
       };
       window.addEventListener("scroll", checkPosition, { passive: true });
       window.addEventListener("resize", checkPosition);
@@ -137,13 +146,13 @@ export function ArticleFeed({
     }
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) void loadMore();
+        if (entry.isIntersecting) autoLoadRef.current();
       },
       { rootMargin: "300px 0px" },
     );
     observer.observe(sentinel.current);
     return () => observer.disconnect();
-  }, [hasNext, isLoading, autoLoadPaused, loadMore]);
+  }, [hasNext]);
 
   if (items.length === 0) {
     return (
@@ -163,7 +172,8 @@ export function ArticleFeed({
     );
   }
 
-  const [featured, ...rest] = items;
+  const featured = items.slice(0, 2);
+  const rest = items.slice(2);
   const layouts = feedLayouts(rest.length);
 
   return (
@@ -184,16 +194,12 @@ export function ArticleFeed({
         </div>
       )}
 
-      <ArticlePreview sourceSurface="FEED"
-        featured
-        article={featured}
-        label={categoryLabels[featured.category] ?? featured.category}
-      />
+      <div className="feed-lead-pair">{featured.map(article => <ArticlePreview key={article.id} sourceSurface="FEED" featured article={article} label={categoryLabels[article.category] ?? article.category} />)}</div>
 
       {rest.length > 0 && (
         <div className="mt-0">
           <div className="mb-5 flex items-baseline justify-between gap-5 border-b border-slate-200 pb-3 dark:border-white/10 reading:border-[#d8ccb5]">
-            <h2 className="text-2xl font-extrabold tracking-[-0.025em] reading:font-serif">
+            <h2 className="text-2xl font-extrabold tracking-[-0.025em]">
               {t("latestStories")}</h2>
             <label className="muted flex items-center gap-2 text-xs">
               <span className="sr-only">{t("chooseAPublisher")}</span>
@@ -236,7 +242,7 @@ export function ArticleFeed({
         </div>
       )}
 
-      {isLoading && <ArticleCardsSkeleton />}
+
       {hasNext && (
         <div
           ref={sentinel}
@@ -272,6 +278,8 @@ export function ArticleFeed({
           )}
         </div>
       )}
+      {isLoading && <ArticleCardsSkeleton />}
     </section>
   );
 }
+

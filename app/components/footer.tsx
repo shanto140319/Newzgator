@@ -1,7 +1,6 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import Image from "next/image";
-import logo from "../../public/brand/newsgator-logo-english-v1.png";
+import { BrandLogo } from "./brand-logo";
 export function Footer() {
   const t = useTranslations();
 
@@ -10,11 +9,11 @@ export function Footer() {
       <div className="mx-auto flex w-[min(1240px,calc(100%-48px))] items-end justify-between gap-10 py-12 max-sm:block max-sm:w-[calc(100%-30px)] max-sm:py-10">
         <div>
           <Link
-            className="brand bg-white"
+            className="brand"
             href="/"
             aria-label={t("newsgatorHome")}
           >
-            <Image className="brand-logo" src={logo} alt="NewsGator" sizes="(max-width: 640px) 180px, 248px" />
+            <BrandLogo />
           </Link>
           <p className="mt-5 max-w-md text-sm leading-7 text-slate-400 reading:text-[#d6c8b5]">
             {t("importantNewsFromBangladeshAndTheWorldInOnePlace")}</p>

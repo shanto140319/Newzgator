@@ -7,8 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArticleFeed } from "./components/article-feed";
-import { BreakingNews } from "./components/breaking-news";
-import { DiscoverySidebar } from "./components/discovery-sidebar";
+import { BreakingNews, TrendingNews } from "./components/breaking-news";
 import { FeedSkeleton } from "./components/feed-skeleton";
 import { Footer } from "./components/footer";
 import { Header } from "./components/header";
@@ -104,10 +103,11 @@ export default async function Home({ searchParams }: Props) {
           <p className="muted text-sm">{publisher ? t("publisherLatest", { publisher: localizedName(publisher, locale) }) : t("selectedPublisher")}</p>
           <Link className="text-sm font-semibold text-[var(--accent)] hover:underline" href={feedHref(category)}>{t("allPublishersAlt")}</Link>
         </div>}
-        <div className="home-grid">
+        <Suspense fallback={<BreakingNewsSkeleton rail />}><BreakingNews /></Suspense>
+        <div className="home-full-width">
           <div className="home-feed min-w-0">
             <Suspense fallback={<BreakingNewsSkeleton />}>
-              <BreakingNews />
+              <TrendingNews />
             </Suspense>
             <FeedCategories categories={categories ?? []} activeCategory={category} portalId={portalId} />
             <Suspense
@@ -127,11 +127,6 @@ export default async function Home({ searchParams }: Props) {
               />
             </Suspense>
           </div>
-          <DiscoverySidebar
-            portals={portals}
-            category={category}
-            portalId={portalId}
-          />
         </div>
       </main>
       <Footer />

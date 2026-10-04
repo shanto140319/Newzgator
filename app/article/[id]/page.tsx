@@ -47,7 +47,7 @@ export default async function ArticlePage({ params }: Props) {
       <aside aria-labelledby="related-heading" className="related-panel lg:mt-13">
         <div className="border-b border-slate-100 px-5 py-5 dark:border-white/10 reading:border-[#e8ddc8]">
           <div className="mb-2 h-1 w-8 rounded-full bg-[#c83018]" aria-hidden="true" />
-          <h2 id="related-heading" className="text-xl font-extrabold reading:font-serif">{t("relatedArticles")}</h2>
+          <h2 id="related-heading" className="text-xl font-extrabold">{t("relatedArticles")}</h2>
           <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400 reading:text-[#756553]">{t("moreReportsOnThisTopic")}</p>
         </div>
         <Suspense key={article.id} fallback={<RelatedArticlesSkeleton />}><RelatedArticles articleId={article.id} /></Suspense>
