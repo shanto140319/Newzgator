@@ -21,7 +21,7 @@
 .portals li { min-width:0; max-width:100%; }
 .portal { display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:12px; line-height:20px; overflow-wrap:anywhere; }
 .portal img { flex-shrink:0; width:32px; height:18px; object-fit:contain; }
-.logoLine { flex-wrap:nowrap; gap:12px; overflow-x:auto; scrollbar-width:thin; align-items:center; }
+.logoLine { flex-wrap:nowrap; gap:12px; overflow:hidden; align-items:center; }
 .logoLine li { flex:0 0 auto; }
 .logoLine .portal { white-space:nowrap; }
 .logoLine .portal img { width:64px; height:22px; }
