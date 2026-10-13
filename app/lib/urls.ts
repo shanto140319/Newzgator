@@ -1,5 +1,3 @@
-import { imageHosts } from "./image-hosts";
-
 export function safeUrl(value: unknown): string | undefined {
   if (typeof value !== "string") return;
   try {
@@ -21,5 +19,5 @@ export function imageUrl(value: unknown): string | undefined {
   const parsed = new URL(url);
   // The publisher redirects legacy .com image URLs to .net.
   if (parsed.hostname === "www.bhorerkagoj.com") parsed.hostname = "www.bhorerkagoj.net";
-  return parsed.protocol === "https:" && imageHosts.includes(parsed.hostname) ? parsed.href : undefined;
+  return parsed.protocol === "https:" ? parsed.href : undefined;
 }
