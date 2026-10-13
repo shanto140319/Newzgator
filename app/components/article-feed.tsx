@@ -10,8 +10,7 @@ import { feedLayouts } from "../lib/feed-layout";
 import { feedHref } from "../lib/feed-route";
 import { ArticlePreview } from "./article-preview";
 import { ArticleCardsSkeleton } from "./feed-skeleton";
-
-type FeedState = { items: Article[]; cursor: string | null; hasNext: boolean };
+import { markFeedExit, restoreFeed, saveFeed, type FeedState } from "./feed-state";
 
 type ArticleFeedProps = {
   category: string;
@@ -51,7 +50,10 @@ export function ArticleFeed({
 
   const router = useRouter();
   const [filterPending, startTransition] = useTransition();
-  const [feed, setFeed] = useState<FeedState>({
+  const feedKey = feedHref(category, portalId);
+  const origin = `${initialItems[0]?.id ?? ""}:${initialCursor ?? ""}`;
+  // Coming back from an article restores the pages already loaded by scrolling.
+  const [feed, setFeed] = useState<FeedState>(() => restoreFeed(feedKey, origin) ?? {
     items: initialItems,
     cursor: initialCursor,
     hasNext: initialHasNext,
@@ -70,6 +72,21 @@ export function ArticleFeed({
   useEffect(() => {
     clearLegacyFeedCache();
     return () => controllerRef.current?.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!isFallback) saveFeed(feedKey, origin, feed);
+  }, [feedKey, origin, feed, isFallback]);
+
+  useEffect(() => {
+    // Remember which article the reader left for, so its back link can return here.
+    const onClick = (event: MouseEvent) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const href = (event.target as Element | null)?.closest?.('a[href^="/article/"]')?.getAttribute("href");
+      if (href) markFeedExit(href);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
   }, []);
 
   const loadMore = useCallback(async () => {
