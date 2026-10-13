@@ -1,9 +1,9 @@
 import createNextIntlPlugin from "next-intl/plugin";
-import { imageHosts } from "./app/lib/image-hosts";
 import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: imageHosts.map(hostname => ({ protocol: "https" as const, hostname })),
+    // Publishers serve images from many hosts, so any HTTPS host is allowed.
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
     maximumRedirects: 0,
   },
   async headers() {
