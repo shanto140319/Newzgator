@@ -2,9 +2,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
-    // Publishers serve images from many hosts, so any HTTPS host is allowed.
-    remotePatterns: [{ protocol: "https", hostname: "**" }],
-    maximumRedirects: 0,
+    // Publisher images load directly; the hosting plan's optimizer quota is too small for a news feed.
+    unoptimized: true,
   },
   async headers() {
     return [
