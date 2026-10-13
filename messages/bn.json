@@ -125,5 +125,8 @@
   "breakingScroll": "ব্রেকিং সংবাদ — আরও খবরের জন্য পাশে স্ক্রল করুন",
   "previousBreaking": "আগের ব্রেকিং সংবাদ",
   "nextBreaking": "পরের ব্রেকিং সংবাদ",
-  "loadingPublishers": "সংবাদমাধ্যম লোড হচ্ছে"
+  "loadingPublishers": "সংবাদমাধ্যম লোড হচ্ছে",
+  "recommendedForYou": "আপনার জন্য",
+  "basedOnYourReading": "আপনার পড়ার ভিত্তিতে",
+  "browseMoreToGetRecommendations": "আপনার পছন্দের সংবাদ পেতে আরও খবর পড়ুন, প্রতিক্রিয়া জানান ও সংরক্ষণ করুন।"
 }

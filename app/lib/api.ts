@@ -203,6 +203,26 @@ export async function getTrending(options: { hours?: number; limit?: number; min
     }));
 }
 
+export async function getRecommendations(limit = 6): Promise<Article[]> {
+  const data = await request("/api/v1/recommendations", 10_000);
+  const items: unknown = Array.isArray(data) ? data : data.items;
+  if (!Array.isArray(items)) throw new ApiError(502);
+  const seen = new Set<number>();
+  return items
+    .flatMap((item: Article) => {
+      // One malformed recommendation should not hide the rest.
+      try {
+        const article = normalize(item);
+        if (seen.has(article.id)) return [];
+        seen.add(article.id);
+        return [article];
+      } catch {
+        return [];
+      }
+    })
+    .slice(0, limit);
+}
+
 export async function getBookmarks(
   cursor = "",
 ): Promise<ArticleListResponse["data"]> {

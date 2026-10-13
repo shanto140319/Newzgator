@@ -125,5 +125,8 @@
   "breakingScroll": "Breaking news — scroll horizontally for more stories",
   "previousBreaking": "Previous breaking stories",
   "nextBreaking": "Next breaking stories",
-  "loadingPublishers": "Loading publishers"
+  "loadingPublishers": "Loading publishers",
+  "recommendedForYou": "Recommended for you",
+  "basedOnYourReading": "Based on your reading",
+  "browseMoreToGetRecommendations": "Read, react to and save more stories to get recommendations picked for you."
 }
