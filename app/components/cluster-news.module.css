@@ -21,7 +21,7 @@
 .portals li { min-width:0; max-width:100%; }
 .portal { display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:12px; line-height:20px; overflow-wrap:anywhere; }
 .portal img { flex-shrink:0; width:32px; height:18px; object-fit:contain; }
-.logoLine { flex-wrap:nowrap; gap:12px; overflow-x:auto; scrollbar-width:thin; align-items:center; }
+.logoLine { flex-wrap:nowrap; gap:12px; overflow:hidden; align-items:center; }
 .logoLine li { flex:0 0 auto; }
 .logoLine .portal { white-space:nowrap; }
 .logoLine .portal img { width:64px; height:22px; }
@@ -35,6 +35,9 @@
 .relatedMetadata { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .relatedMetadata .published { margin:0; text-align:right; }
 .relatedPublisher { min-width:0; color:var(--muted); font-size:12px; }
+.recommended { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+.recommended :global(.story-summary) { font-size:14px; }
+.recommendedEmpty { padding:28px 20px; border:1px dashed var(--line); border-radius:8px; background:var(--paper); color:var(--muted); font-size:14px; line-height:24px; text-align:center; }
 .breakingStrip { position:relative; min-width:0; margin-bottom:36px; }
 .breakingStrip .heading { padding-right:88px; }
 .breakingStrip .heading h2::before { display:none; }
@@ -50,7 +53,11 @@
 .railControls { position:absolute; right:0; top:0; display:flex; gap:6px; }
 .railControls button { display:grid; place-items:center; width:32px; height:32px; border:1px solid var(--line); border-radius:50%; background:var(--paper); color:var(--ink); cursor:pointer; box-shadow:var(--shadow-card); }
 .railControls button:hover { border-color:var(--accent); color:var(--accent); }
+@media(max-width:1099px) {
+ .recommended { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
 @media(max-width:767px) {
+ .recommended { grid-template-columns:minmax(0,1fr); gap:20px; }
  .breakingCard { grid-template-columns:minmax(0,1fr); gap:20px; }
  .featured { padding:12px; }
  .compact { padding:16px; gap:12px; }

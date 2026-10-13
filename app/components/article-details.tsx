@@ -2,7 +2,7 @@ import { localizedName } from "../lib/localized-name";
 import { useTranslations, useLocale } from "next-intl";
 import { TrackedArticleLink } from "./tracked-article-link";
 import { NewsImage } from "./news-image";
-import Link from "next/link";
+import { BackToFeedLink } from "./back-to-feed-link";
 import type { ArticleDetails } from "../lib/articles";
 import { SaveButton } from "./save-button";
 import { ReactionBar } from "./reaction-bar";
@@ -14,7 +14,7 @@ export function ArticleDetailsView({ article, categoryLabel }: { article: Articl
   const publisher = localizedName(article.portal, locale);
   const date = new Date(article.publishedAt);
   return <article className="detail-story">
-    <Link className="muted inline-flex text-sm font-semibold hover:underline" href="/">{t("backToAllNews")}</Link>
+    <BackToFeedLink className="muted inline-flex text-sm font-semibold hover:underline">{t("backToAllNews")}</BackToFeedLink>
     <header className="mt-7">
       <span className="text-sm font-bold text-[var(--accent)]">{categoryLabel}</span>
       <h1 className="detail-title">{article.headline}</h1>

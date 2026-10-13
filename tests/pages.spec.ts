@@ -5,43 +5,46 @@ test.beforeEach(async ({ page }) => {
   await page.route("https://www.kalbela.com/test-image.webp", route => route.abort());
 });
 
-test("pagination works and back/reload show a fresh first page", async ({ page }) => {
+test("pagination works, back restores loaded pages and reload shows a fresh first page", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(20);
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
   const link = page.locator('a[href="/article/26"]');
   await link.scrollIntoViewIfNeeded();
+  const scrolled = await page.evaluate(() => scrollY);
   await link.click();
   await expect(page.locator("h1")).toContainText("26");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
+  await expect(link).toBeInViewport();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(scrolled - 200);
   await page.goForward();
   await expect(page.locator("h1")).toContainText("26");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
   await page.reload();
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(20);
   expect(errors).toEqual([]);
 });
 
 test("category navigation isolates pagination per route", async ({ page }) => {
   await page.goto("/?category=sports");
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
   await page.getByRole("navigation").getByRole("link", { name: "প্রযুক্তি", exact: true }).click();
   await expect(page).toHaveURL(/category=technology/);
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(20);
   await expect(page.locator('nav [aria-current="page"]')).toHaveText("প্রযুক্তি");
-  await expect(page.locator("main article").first()).toContainText("technology");
+  await expect(page.locator("[data-article-feed] article").first()).toContainText("technology");
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(40);
-  await expect(page.locator("main article").last()).toContainText("technology");
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article").last()).toContainText("technology");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(20);
-  await expect(page.locator("main article").first()).toContainText("sports");
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article").first()).toContainText("sports");
 });
 
 test("details are server rendered with SEO metadata and safe content", async ({ browser, request }) => {
@@ -75,10 +78,10 @@ test("pagination failures can be retried without losing articles", async ({ page
   await page.route("**/api/v1/articles?**", route => route.fulfill({ status: 502, body: "{}" }));
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(20);
   await page.unroute("**/api/v1/articles?**");
   await page.getByRole("button", { name: "আবার চেষ্টা করুন" }).click();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
 });
 
 test("list and details have no serious accessibility violations", async ({ page }) => {
@@ -91,22 +94,22 @@ test("list and details have no serious accessibility violations", async ({ page 
 });
 
 
-test("return-home link loads a fresh feed even when storage is blocked", async ({ page }) => {
+test("return-home link restores the feed even when storage is blocked", async ({ page }) => {
   await page.addInitScript(() => {
     Storage.prototype.getItem = () => { throw new Error("Storage blocked"); };
     Storage.prototype.setItem = () => { throw new Error("Storage blocked"); };
   });
   await page.goto("/");
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
   const link = page.locator('a[href="/article/26"]');
   await link.scrollIntoViewIfNeeded();
   await link.click();
   await expect(page.locator("h1")).toContainText("26");
   await page.getByRole("link", { name: "← সব খবরে ফিরুন" }).click();
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(60);
 });
 
 test("scroll pagination works without IntersectionObserver or a Load More button", async ({ page }) => {
@@ -114,7 +117,7 @@ test("scroll pagination works without IntersectionObserver or a Load More button
   await page.goto("/");
   await expect(page.getByRole("button", { name: "আরও খবর দেখুন" })).toHaveCount(0);
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
 });
 
 
@@ -145,18 +148,18 @@ test("home skeleton and mobile pagination preserve the responsive layout", async
   await page.getByRole("navigation").getByRole("link", { name: "প্রযুক্তি", exact: true }).click();
   await expect(page.getByRole("status", { name: "সংবাদ লোড হচ্ছে", exact: true })).toBeVisible();
   await page.screenshot({ path: "test-results/home-loading.png", fullPage: true });
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(20);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
   const link = page.locator('a[href="/article/26"]');
   await link.scrollIntoViewIfNeeded();
   await link.click();
   await expect(page.locator("h1")).toContainText("26");
   await page.goBack();
-  await expect(page.locator("main article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
   await page.screenshot({ path: "test-results/mobile-feed.png" });
 });
 
@@ -184,7 +187,7 @@ for (const nextCursor of ["same", "duplicate-page"]) {
     await page.goto("/");
     await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
     await expect(page.locator("main").getByRole("alert")).toBeVisible();
-    await expect(page.locator("main article")).toHaveCount(20);
+    await expect(page.locator("[data-article-feed] article")).toHaveCount(20);
     await page.waitForTimeout(350);
     expect(calls).toBe(1);
   });
@@ -193,15 +196,15 @@ for (const nextCursor of ["same", "duplicate-page"]) {
 
 test("bookmark delete removes the article from the saved list", async ({ page }) => {
   await page.goto("/");
-  const first = page.locator("main article").first();
+  const first = page.locator("[data-article-feed] article").first();
   const headline = (await first.locator("h2").innerText()).trim();
   await first.getByRole("button", { name: "পরে পড়ুন" }).click();
   await expect(first.getByRole("button", { name: "সংরক্ষণ সরান" })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("navigation").getByRole("link", { name: "সংরক্ষিত" }).click();
-  await expect(page.locator("main article")).toHaveCount(1);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(1);
   await expect(page.locator("main article h2")).toHaveText(headline);
   await page.locator("main article").getByRole("button", { name: "সংরক্ষণ সরান" }).click();
-  await expect(page.locator("main article")).toHaveCount(0);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "এখনও কোনো সংবাদ সংরক্ষণ করা নেই" })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: "এখনও কোনো সংবাদ সংরক্ষণ করা নেই" })).toBeVisible();
@@ -250,10 +253,10 @@ test("publisher filtering keeps cursor pagination and category history isolated"
   await page.goto("/?category=sports");
   await page.getByLabel("সংবাদমাধ্যম বাছাই করুন").selectOption("2");
   await expect(page).toHaveURL(/category=sports&portalId=2/);
-  await expect(page.locator("main article")).toHaveCount(20);
-  await expect(page.locator("main article").first()).toContainText("দ্বিতীয় উৎস");
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article").first()).toContainText("দ্বিতীয় উৎস");
   await page.locator("[data-feed-sentinel]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
   expect(requests.some(url => url.includes("portalId=2") && url.includes("cursor="))).toBeTruthy();
   const link = page.locator('a[href="/article/26"]');
   await link.scrollIntoViewIfNeeded();
@@ -261,12 +264,12 @@ test("publisher filtering keeps cursor pagination and category history isolated"
   await expect(page.locator("h1")).toContainText("26");
   await page.goBack();
   await expect(page).toHaveURL(/category=sports&portalId=2/);
-  await expect(page.locator("main article")).toHaveCount(20);
-  await expect(page.locator("main article").first()).toContainText("দ্বিতীয় উৎস");
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(40);
+  await expect(page.locator("[data-article-feed] article").first()).toContainText("দ্বিতীয় উৎস");
   await page.getByLabel("সংবাদমাধ্যম বাছাই করুন").selectOption("");
   await expect(page).toHaveURL(/\/\?category=sports$/);
-  await expect(page.locator("main article")).toHaveCount(20);
-  await expect(page.locator("main article").first()).toContainText("সংবাদ উৎস");
+  await expect(page.locator("[data-article-feed] article")).toHaveCount(20);
+  await expect(page.locator("[data-article-feed] article").first()).toContainText("সংবাদ উৎস");
 });
 
 test("homepage discovery matches the desktop and mobile layout", async ({ page }) => {
@@ -308,8 +311,8 @@ test("persistent sidebar stays reachable and summaries remain complete", async (
     const summary = page.locator(".story-summary").nth(1);
     expect(await summary.evaluate(el => el.scrollHeight <= el.clientHeight + 1)).toBeTruthy();
     expect(await summary.evaluate(el => getComputedStyle(el).webkitLineClamp)).toBe("none");
-    await expect(page.locator("main article").first().getByRole("button", { name: /পরে পড়ুন/ })).toBeEnabled();
-    await expect(page.locator("main article").first().getByRole("group", { name: "পাঠকের প্রতিক্রিয়া" })).toBeVisible();
+    await expect(page.locator("[data-article-feed] article").first().getByRole("button", { name: /পরে পড়ুন/ })).toBeEnabled();
+    await expect(page.locator("[data-article-feed] article").first().getByRole("group", { name: "পাঠকের প্রতিক্রিয়া" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   }
 });

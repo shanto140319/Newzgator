@@ -11,6 +11,7 @@ import { BreakingNews, TrendingNews } from "./components/breaking-news";
 import { FeedSkeleton } from "./components/feed-skeleton";
 import { Footer } from "./components/footer";
 import { Header } from "./components/header";
+import { RecommendedNews } from "./components/recommended-news";
 import { getArticles, getCategories, getPortals } from "./lib/api";
 import type { Portal } from "./lib/articles";
 import { feedHref, validPortalId } from "./lib/feed-route";
@@ -108,6 +109,9 @@ export default async function Home({ searchParams }: Props) {
           <div className="home-feed min-w-0">
             <Suspense fallback={<BreakingNewsSkeleton />}>
               <TrendingNews />
+            </Suspense>
+            <Suspense fallback={null}>
+              <RecommendedNews />
             </Suspense>
             <FeedCategories categories={categories ?? []} activeCategory={category} portalId={portalId} />
             <Suspense
