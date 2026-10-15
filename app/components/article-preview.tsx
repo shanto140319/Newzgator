@@ -27,7 +27,10 @@ export function ArticlePreview({ article, category, featured = false, compact = 
   return <article className={featured ? "lead-story" : compact ? "feed-grid-card" : "story-row"}>
     <div className="story-media">
       <div className={(featured ? "lead-photo" : "row-photo") + " relative"}>
-        {article.mainImage ? <NewsImage src={article.mainImage} alt="" fill preload={priority} sizes={featured ? "(max-width: 1023px) calc(100vw - 32px), 840px" : compact ? "(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 45vw, 410px" : "(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 40vw, 340px"} className="object-cover" /> : <span className="photo-placeholder" role="img" aria-label={t("imageUnavailable")}>{t("n")}</span>}
+        {/* The image opens the article too; the title stays the single link for keyboard and screen-reader users. */}
+        <TrackedArticleLink articleId={article.id} sourceSurface={sourceSurface} href={"/article/" + article.id} prefetch={false} tabIndex={-1} aria-hidden="true" className="absolute inset-0 block">
+          {article.mainImage ? <NewsImage src={article.mainImage} alt="" fill preload={priority} sizes={featured ? "(max-width: 1023px) calc(100vw - 32px), 840px" : compact ? "(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 45vw, 410px" : "(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 40vw, 340px"} className="object-cover" /> : <span className="photo-placeholder" role="img" aria-label={t("imageUnavailable")}>{t("n")}</span>}
+        </TrackedArticleLink>
         <Source article={article} />
       </div>
       {horizontal && actions}

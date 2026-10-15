@@ -25,15 +25,31 @@ export function SummaryPreview({ summary, headline, className = "" }: { summary:
     target.style.top = `${useBelow ? rect.bottom + 8 : Math.max(12, rect.top - target.getBoundingClientRect().height - 8)}px`;
     setOpen(true);
   }
-  function scheduleClose() { cancelClose(); timer.current = setTimeout(close, 180); }
+  // The summary stays open while the pointer is anywhere on its story card or on the panel itself.
+  function scheduleClose() {
+    cancelClose();
+    timer.current = setTimeout(() => {
+      if (button.current?.closest("article")?.matches(":hover") || panel.current?.matches(":hover")) return;
+      close();
+    }, 180);
+  }
+  const scheduleCloseRef = useRef(scheduleClose);
+  useEffect(() => { scheduleCloseRef.current = scheduleClose; });
   useEffect(() => {
     if (!open) return;
-    const dismiss = (event: Event) => { if (event.type === "scroll" && panel.current?.contains(event.target as Node)) return; panel.current?.hidePopover(); setOpen(false); };
+    const card = button.current?.closest("article");
+    const leaveCard = () => scheduleCloseRef.current();
+    card?.addEventListener("mouseleave", leaveCard);
+    const dismiss = (event: Event) => {
+      // Only scrolls that move the summary matter; the auto-scrolling breaking rail must not close it.
+      if (event.type === "scroll" && !(event.target === document || (event.target as Node).contains(button.current))) return;
+      panel.current?.hidePopover(); setOpen(false);
+    };
     const escape = (event: KeyboardEvent) => { if (event.key === "Escape") dismiss(event); };
     const outside = (event: PointerEvent) => { if (!panel.current?.contains(event.target as Node) && !button.current?.contains(event.target as Node)) dismiss(event); };
     window.addEventListener("pointerdown", outside);
     window.addEventListener("keydown", escape); window.addEventListener("resize", dismiss); window.addEventListener("scroll", dismiss, true);
-    return () => { window.removeEventListener("pointerdown", outside); window.removeEventListener("keydown", escape); window.removeEventListener("resize", dismiss); window.removeEventListener("scroll", dismiss, true); };
+    return () => { card?.removeEventListener("mouseleave", leaveCard); window.removeEventListener("pointerdown", outside); window.removeEventListener("keydown", escape); window.removeEventListener("resize", dismiss); window.removeEventListener("scroll", dismiss, true); };
   }, [open]);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   return <>
