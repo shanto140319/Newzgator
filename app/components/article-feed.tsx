@@ -4,7 +4,7 @@ import { localizedName } from "../lib/localized-name";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import type { Article, Portal } from "../lib/articles";
+import type { Article, Category, Portal } from "../lib/articles";
 import { fetchArticles } from "../lib/client-api";
 import { feedLayouts } from "../lib/feed-layout";
 import { feedHref } from "../lib/feed-route";
@@ -16,7 +16,7 @@ type ArticleFeedProps = {
   category: string;
   portalId: string;
   portals: Portal[];
-  categoryLabels: Record<string, string>;
+  categories: Category[];
   initialItems: Article[];
   initialCursor: string | null;
   initialHasNext: boolean;
@@ -38,7 +38,7 @@ export function ArticleFeed({
   category,
   portalId,
   portals,
-  categoryLabels,
+  categories,
   initialItems,
   initialCursor,
   initialHasNext,
@@ -211,7 +211,7 @@ export function ArticleFeed({
         </div>
       )}
 
-      <div className="feed-lead-pair">{featured.map(article => <ArticlePreview key={article.id} sourceSurface="FEED" featured article={article} label={categoryLabels[article.category] ?? article.category} />)}</div>
+      <div className="feed-lead-pair">{featured.map(article => <ArticlePreview key={article.id} sourceSurface="FEED" featured article={article} category={categories.find(c => c.name === article.category)} />)}</div>
 
       {rest.length > 0 && (
         <div className="mt-0">
@@ -252,7 +252,7 @@ export function ArticleFeed({
                 featured={layouts[index] === "featured"}
                 compact={layouts[index] === "grid"}
                 article={article}
-                label={categoryLabels[article.category] ?? article.category}
+                category={categories.find(c => c.name === article.category)}
               />
             ))}
           </div>

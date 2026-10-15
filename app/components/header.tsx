@@ -1,3 +1,4 @@
+"use client";
 import { useTranslations, useLocale } from "next-intl";
 import { LanguageSwitcher } from "./language-switcher";
 import { SearchModal } from "./search-modal";
@@ -15,7 +16,8 @@ export function Header() {
       <div className={styles.utilityBar}>
         <div className={`site-container ${styles.utilityInner}`}>
           <span>{t("trustedNewsFromBangladeshAndTheWorld")}</span>
-          <time dateTime={new Date().toISOString()}>{new Intl.DateTimeFormat(locale, { dateStyle: "full", timeZone: "Asia/Dhaka" }).format(new Date())}</time>
+          {/* Day precision, so the server and browser render the same value. */}
+          <time dateTime={new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka" }).format(new Date())}>{new Intl.DateTimeFormat(locale, { dateStyle: "full", timeZone: "Asia/Dhaka" }).format(new Date())}</time>
         </div>
       </div>
       <div className={`site-container ${styles.headerMain}`}>

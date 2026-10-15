@@ -1,3 +1,4 @@
+"use client";
 import { useTranslations } from "next-intl";
 export function SkeletonBlock({ className = "" }: { className?: string }) {
   return <div className={"rounded-md bg-slate-200 dark:bg-white/10 reading:bg-[#dfd3bd] " + className} />;

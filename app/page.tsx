@@ -1,4 +1,5 @@
 import { localizedName } from "./lib/localized-name";
+import { Message } from "./components/message";
 import { getLocale, getTranslations } from "next-intl/server";
 import { BreakingNewsSkeleton } from "./components/breaking-news-skeleton";
 import { FeedCategories } from "./components/feed-categories";
@@ -13,7 +14,7 @@ import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 import { RecommendedNews } from "./components/recommended-news";
 import { getArticles, getCategories, getPortals } from "./lib/api";
-import type { Portal } from "./lib/articles";
+import type { Category, Portal } from "./lib/articles";
 import { feedHref, validPortalId } from "./lib/feed-route";
 
 type Props = {
@@ -53,12 +54,12 @@ export async function generateMetadata({
 async function ServerArticleFeed({
   category,
   portalId,
-  labels,
+  categories,
   portals,
 }: {
   category: string;
   portalId: string;
-  labels: Record<string, string>;
+  categories: Category[];
   portals: Portal[];
 }) {
   const data = await getArticles(category, "", portalId).catch(() => null);
@@ -68,7 +69,7 @@ async function ServerArticleFeed({
       category={category}
       portalId={portalId}
       portals={portals}
-      categoryLabels={labels}
+      categories={categories}
       initialItems={data?.items ?? []}
       initialCursor={data?.nextCursor ?? null}
       initialHasNext={data?.hasNext ?? false}
@@ -77,10 +78,6 @@ async function ServerArticleFeed({
   );
 }
 export default async function Home({ searchParams }: Props) {
-  const locale = await getLocale();
-
-  const t = await getTranslations();
-
   const { category, portalId } = await filtersFor(searchParams);
   const [categories, portals] = await Promise.all([
     getCategories().catch(() => null),
@@ -88,8 +85,7 @@ export default async function Home({ searchParams }: Props) {
   ]);
   if (category && categories && !categories.some((c) => c.name === category))
     notFound();
-  const label =
-    localizedName(categories?.find((c) => c.name === category), locale, category);
+  const activeCategory = categories?.find((c) => c.name === category) ?? category;
   const publisher = portals.find((p) => String(p.id) === portalId);
   return (
     <div id="top" className="flex min-h-screen flex-col">
@@ -99,10 +95,10 @@ export default async function Home({ searchParams }: Props) {
         tabIndex={-1}
         className="site-container flex-1 py-8 pb-16 max-sm:py-6"
       >
-        <h1 className="sr-only">{category ? t("categoryNews", { category: label }) : t("newsgatorNews")}</h1>
+        <h1 className="sr-only">{category ? <Message id="categoryNews" values={{ category: activeCategory }} /> : <Message id="newsgatorNews" />}</h1>
         {portalId && <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p className="muted text-sm">{publisher ? t("publisherLatest", { publisher: localizedName(publisher, locale) }) : t("selectedPublisher")}</p>
-          <Link className="text-sm font-semibold text-[var(--accent)] hover:underline" href={feedHref(category)}>{t("allPublishersAlt")}</Link>
+          <p className="muted text-sm">{publisher ? <Message id="publisherLatest" values={{ publisher }} /> : <Message id="selectedPublisher" />}</p>
+          <Link className="text-sm font-semibold text-[var(--accent)] hover:underline" href={feedHref(category)}><Message id="allPublishersAlt" /></Link>
         </div>}
         <Suspense fallback={<BreakingNewsSkeleton rail />}><BreakingNews /></Suspense>
         <div className="home-full-width">
@@ -122,12 +118,7 @@ export default async function Home({ searchParams }: Props) {
                 category={category}
                 portalId={portalId}
                 portals={portals}
-                labels={Object.fromEntries(
-                  (categories ?? []).map((c) => [
-                    c.name,
-                    localizedName(c, locale),
-                  ]),
-                )}
+                categories={categories ?? []}
               />
             </Suspense>
           </div>

@@ -2,7 +2,7 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { ArticleListResponse } from "../lib/articles";
+import type { ArticleListResponse, Category } from "../lib/articles";
 import { fetchBookmarks } from "../lib/client-api";
 import { ArticlePreview } from "./article-preview";
 import { ArticleCardsSkeleton } from "./feed-skeleton";
@@ -11,7 +11,7 @@ import { useSavedArticles } from "./article-state";
 type Data = ArticleListResponse["data"];
 const empty: Data = { items: [], nextCursor: null, hasNext: false, size: 0 };
 
-export function SavedFeed({ labels }: { labels: Record<string, string> }) {
+export function SavedFeed({ categories }: { categories: Category[] }) {
   const t = useTranslations();
 
   const [data, setData] = useState(empty);
@@ -107,7 +107,7 @@ export function SavedFeed({ labels }: { labels: Record<string, string> }) {
         <ArticlePreview
           key={article.id}
           article={article}
-          label={labels[article.category] ?? article.category}
+          category={categories.find(c => c.name === article.category)}
         />
       ))}
       {!visible.length && !error && !loading && (

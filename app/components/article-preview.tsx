@@ -1,8 +1,9 @@
+"use client";
 import { localizedName } from "../lib/localized-name";
 import { useTranslations, useLocale } from "next-intl";
 import { SummaryPreview } from "./summary-preview";
 import { TrackedArticleLink, type SourceSurface } from "./tracked-article-link";
-import type { Article } from "../lib/articles";
+import type { Article, Category } from "../lib/articles";
 import { NewsImage } from "./news-image";
 import { SaveButton } from "./save-button";
 import { ReactionBar } from "./reaction-bar";
@@ -17,8 +18,9 @@ function Source({ article }: { article: Article }) {
     <time dateTime={article.publishedAt}>{Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Dhaka" }).format(date)}</time>
   </div>;
 }
-export function ArticlePreview({ article, label, featured = false, compact = false, priority = false, sourceSurface }: { article: Article; label: string; featured?: boolean; compact?: boolean; priority?: boolean; sourceSurface?: SourceSurface }) {
+export function ArticlePreview({ article, category, featured = false, compact = false, priority = false, sourceSurface }: { article: Article; category?: Category; featured?: boolean; compact?: boolean; priority?: boolean; sourceSurface?: SourceSurface }) {
   const t = useTranslations();
+  const label = localizedName(category, useLocale(), article.category);
 
   const horizontal = !featured && !compact;
   const actions = <div className="story-actions"><ReactionBar articleId={article.id} reactions={article.articleReactions} compact /><SaveButton articleId={article.id} initialSaved={article.isBookmarked} /><span className="muted text-xs">{label}</span></div>;

@@ -1,3 +1,4 @@
+"use client";
 import { localizedName } from "../lib/localized-name";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";

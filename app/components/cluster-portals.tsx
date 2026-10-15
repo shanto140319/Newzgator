@@ -1,3 +1,4 @@
+"use client";
 import { useTranslations } from "next-intl";
 import type { TrendingCluster } from "../lib/articles";
 import styles from "./cluster-news.module.css";

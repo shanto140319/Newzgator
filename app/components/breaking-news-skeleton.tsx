@@ -1,7 +1,16 @@
+"use client";
 import { useTranslations } from "next-intl";
 import { SkeletonBlock } from "./feed-skeleton";
 import styles from "./cluster-news.module.css";
 
+export function RelatedArticlesSkeleton() {
+  const t = useTranslations();
+
+  return <div role="status" aria-label={t("loadingRelatedNews")} className="space-y-6 p-5">
+    <span className="sr-only">{t("loadingRelatedNewsAlt")}</span>
+    {Array.from({ length: 4 }, (_, index) => <div aria-hidden="true" key={index} className="flex animate-pulse gap-3"><div className="flex-1 space-y-2"><SkeletonBlock className="h-4 w-full" /><SkeletonBlock className="h-4 w-4/5" /><SkeletonBlock className="mt-3 h-3 w-24" /></div><SkeletonBlock className="size-20 shrink-0 rounded-xl" /></div>)}
+  </div>;
+}
 export function RelatedReportsSkeleton() {
   const t = useTranslations();
 

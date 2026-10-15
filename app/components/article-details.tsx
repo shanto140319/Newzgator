@@ -1,17 +1,19 @@
+"use client";
 import { localizedName } from "../lib/localized-name";
 import { useTranslations, useLocale } from "next-intl";
 import { TrackedArticleLink } from "./tracked-article-link";
 import { NewsImage } from "./news-image";
 import { BackToFeedLink } from "./back-to-feed-link";
-import type { ArticleDetails } from "../lib/articles";
+import type { ArticleDetails, Category } from "../lib/articles";
 import { SaveButton } from "./save-button";
 import { ReactionBar } from "./reaction-bar";
 
-export function ArticleDetailsView({ article, categoryLabel }: { article: ArticleDetails; categoryLabel: string }) {
+export function ArticleDetailsView({ article, category }: { article: ArticleDetails; category?: Category }) {
   const t = useTranslations();
   const locale = useLocale();
 
   const publisher = localizedName(article.portal, locale);
+  const categoryLabel = localizedName(category, locale, article.category);
   const date = new Date(article.publishedAt);
   return <article className="detail-story">
     <BackToFeedLink className="muted inline-flex text-sm font-semibold hover:underline">{t("backToAllNews")}</BackToFeedLink>

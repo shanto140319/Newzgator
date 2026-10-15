@@ -1,3 +1,4 @@
+"use client";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BrandLogo } from "./brand-logo";
@@ -23,7 +24,11 @@ export function Footer() {
             {t("latest")}</Link>
           <Link className="hover:text-white" href="mailto:hello@newsgator.news">
             {t("contact")}</Link>
-          <Link className="hover:text-white" href="#top">
+          {/* Smooth only here: a global smooth scroll-behavior would also animate the browser's back-button restore. */}
+          <Link className="hover:text-white" href="#top" onClick={event => {
+            event.preventDefault();
+            window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+          }}>
             {t("backToTop")}</Link>
         </div>
       </div>
