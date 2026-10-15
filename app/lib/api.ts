@@ -49,7 +49,7 @@ function normalize<T extends Article | ArticleDetails>(article: T): T {
     !article.portal ||
     typeof article.portal.name !== "string" ||
     typeof article.publishedAt !== "string" ||
-    typeof article.category !== "string"
+    (article.category !== null && typeof article.category !== "string")
   )
     throw new ApiError(502);
   if ("summary" in article && typeof article.summary !== "string")

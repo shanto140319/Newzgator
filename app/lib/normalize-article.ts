@@ -4,6 +4,8 @@ import { imageUrl, safeUrl } from "./urls";
 export function normalizeArticle<T extends Article | ArticleDetails>(article: T): T {
   return {
     ...article,
+    // Some articles arrive without a category; they show as uncategorized instead of failing the list.
+    category: article.category ?? "",
     mainImage: imageUrl(article.mainImage) ?? null,
     publishedAt: /(?:Z|[+-]\d{2}:\d{2})$/.test(article.publishedAt)
       ? article.publishedAt
