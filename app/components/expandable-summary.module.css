@@ -1,0 +1,11 @@
+.wrap { position:relative; }
+.text { height:auto; max-height:4lh; overflow:hidden; }
+/* Only the open, scrollable summary keeps the wheel; collapsed ones let it reach the page. */
+.text[data-expanded] { height:4lh; overflow-y:auto; overscroll-behavior:contain; padding-right:4px; scrollbar-width:thin; }
+/* Fade the last clamped line into the card so the cut reads as "there is more". */
+.toggleRow { position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:6px 0 12px; }
+.toggleRow:not([data-expanded])::before { content:""; position:absolute; left:0; right:0; bottom:100%; height:2.4em; margin-bottom:6px; background:linear-gradient(to bottom, transparent, var(--paper)); pointer-events:none; }
+/* Plain text actions: "show more" on the left, "details" pushed to the right. */
+.toggle, .details { padding:0; border:0; background:none; color:var(--accent); font-size:13px; font-weight:600; cursor:pointer; }
+.toggle:hover, .details:hover { text-decoration:underline; }
+.details { margin-left:auto; }

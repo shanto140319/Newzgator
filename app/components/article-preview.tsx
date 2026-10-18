@@ -1,7 +1,8 @@
 "use client";
 import { localizedName } from "../lib/localized-name";
 import { useTranslations, useLocale } from "next-intl";
-import { SummaryPreview } from "./summary-preview";
+import { ExpandableSummary } from "./expandable-summary";
+import summaryStyles from "./expandable-summary.module.css";
 import { TrackedArticleLink, type SourceSurface } from "./tracked-article-link";
 import type { Article, Category } from "../lib/articles";
 import { NewsImage } from "./news-image";
@@ -23,6 +24,8 @@ export function ArticlePreview({ article, category, featured = false, compact = 
   const label = localizedName(category, useLocale(), article.category);
 
   const horizontal = !featured && !compact;
+  // Paragraph breaks arrive as blank lines; keep the line break but drop the empty line pre-line would render.
+  const summary = article.summary?.replace(/\n\s*\n/g, "\n");
   const actions = <div className="story-actions"><ReactionBar articleId={article.id} reactions={article.articleReactions} compact /><SaveButton articleId={article.id} initialSaved={article.isBookmarked} /><span className="muted text-xs">{label}</span></div>;
   return <article className={featured ? "lead-story" : compact ? "feed-grid-card" : "story-row"}>
     <div className="story-media">
@@ -33,12 +36,13 @@ export function ArticlePreview({ article, category, featured = false, compact = 
         </TrackedArticleLink>
         <Source article={article} />
       </div>
-      {horizontal && actions}
     </div>
     <div className="story-copy">
       <TrackedArticleLink articleId={article.id} sourceSurface={sourceSurface} href={"/article/" + article.id} prefetch={false} className="story-link"><h2 className="story-title">{article.headline}</h2></TrackedArticleLink>
-      {!featured && article.summary ? <SummaryPreview className="story-summary" summary={article.summary} headline={article.headline} /> : <p className="story-summary">{article.summary}</p>}
+      {!featured && summary ? <ExpandableSummary className="story-summary" summary={summary}details={<TrackedArticleLink articleId={article.id} sourceSurface={sourceSurface} href={"/article/" + article.id} prefetch={false} className={summaryStyles.details}>{t("goToDetails")}</TrackedArticleLink>} /> : <p className="story-summary">{summary}</p>}
       {!horizontal && actions}
     </div>
+    {/* Horizontal rows run their utilities along the full card bottom, under both image and copy. */}
+    {horizontal && actions}
   </article>;
 }
