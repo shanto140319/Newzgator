@@ -105,8 +105,7 @@
   --color-line: var(--line);
   --color-soft: var(--soft);
   --color-accent: var(--accent);
-  --font-sans:
-    "Noto Sans Bengali", "Hind Siliguri", "Segoe UI", Arial, sans-serif;
+  --font-body: var(--font-noto-sans-bengali), "Segoe UI", Arial, sans-serif;
   --text-lead: var(--type-lead-size);
   --text-section: var(--type-section-size);
   --text-headline: var(--type-headline-size);
@@ -572,7 +571,8 @@ button:disabled {
 
 /* Compact Figma type scale: no heading exceeds 18px and body copy stays 14px. */
 h1, h2, h3 { font-size: var(--type-headline-size); line-height: var(--type-headline-line); }
-.story-summary, .detail-body { font-size: var(--type-summary-size); line-height: var(--type-summary-line); }
+h1, h2, h3, h4, h5, h6, .story-title { font-family: var(--font-body); }
+.story-summary, .detail-body { font-family: var(--font-body); font-size: var(--type-summary-size); line-height: var(--type-summary-line); }
 
 /* Repeating feed: feature, four grid cards, then three horizontal stories. */
 .mixed-story-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }

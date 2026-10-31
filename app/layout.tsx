@@ -1,4 +1,4 @@
-import { Hind_Siliguri } from "next/font/google";
+import { Hind_Siliguri, Noto_Sans_Bengali } from "next/font/google";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -13,13 +13,21 @@ const hindSiliguri = Hind_Siliguri({
   variable: "--font-hind-siliguri",
 });
 
+// Font for titles, summaries and article text; the rest of the UI keeps Hind Siliguri.
+const notoSansBengali = Noto_Sans_Bengali({
+  subsets: ["bengali", "latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-noto-sans-bengali",
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
   return { metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"), title: t("newsgatorAllYourNewsInOnePlace"), description: t("importantNewsFromBangladeshAndTheWorldGatheredFromTrustedSources") };
 }
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
-  return <html lang={locale} className={hindSiliguri.variable} suppressHydrationWarning>
+  return <html lang={locale} className={`${hindSiliguri.variable} ${notoSansBengali.variable}`} suppressHydrationWarning>
     <body className="min-h-screen bg-[#f4f6f8] font-sans text-[#101828] antialiased transition-colors duration-300 dark:bg-[#0b1018] dark:text-[#eaf0f6] reading:bg-[#f4ecd8] reading:text-[#3b3027]">
       <LocaleProvider initialLocale={locale === "en" ? "en" : "bn"}>
         <a className="skip-link" href="#main-content"><Message id="skipToNews" /></a>
